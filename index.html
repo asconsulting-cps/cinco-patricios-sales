@@ -961,7 +961,7 @@ const VENUE_TYPES = ['Bar','Hotel','Restaurant'];
   updateWeekLabel();
   updateUrlDisplay();
   const saved = localStorage.getItem('cp_script_url');
-  if (saved) document.getElementById('script-url-input').value = saved;
+  const urlInput = document.getElementById('script-url-input'); if (urlInput && saved) urlInput.value = saved;
   // Render with local fallback first, then fetch live from Sheets
   renderTarget(STATE.totalSold);
   if (STATE.scriptUrl) fetchLiveTotal();
@@ -1306,6 +1306,7 @@ function saveScriptUrl() {
 
 function updateUrlDisplay() {
   const el = document.getElementById('current-url-display');
+  if (!el) return;
   if (STATE.scriptUrl) {
     el.textContent = STATE.scriptUrl;
     el.style.color = 'var(--agave)';

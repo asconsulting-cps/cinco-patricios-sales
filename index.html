@@ -1059,26 +1059,24 @@ function addVenueRow() {
   const tbody = document.getElementById('venue-rows');
   const tr = document.createElement('tr');
   tr.id = 'vrow-' + id;
-  tr.innerHTML = `
-    <td><input class="venue-row-input" type="text" placeholder="Venue name" oninput="recalcTotals()"></td>
-    <td>
-      <select class="venue-row-select">
-        <option value="">Type</option>
-        ${VENUE_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}
-      </select>
-    </td>
-    <td>
-      <select class="venue-row-select" onchange="handleWholesalerChange(this,${id})">
-        <option value="">Wholesaler</option>
-        ${WHOLESALERS.map(w => `<option value="${w}">${w}</option>`).join('')}
-      </select>
-      <input class="venue-row-input" type="text" id="w-other-${id}" placeholder="Enter name"
-        style="display:none;margin-top:4px;" oninput="recalcTotals()">
-    </td>
-    <td><input class="venue-row-input num" type="number" placeholder="0" min="0" oninput="recalcTotals()"></td>
-    <td><input class="venue-row-input num" type="number" placeholder="0" min="0"></td>
-    <td><button class="remove-row-btn" onclick="removeVenueRow(${id})" title="Remove">×</button></td>
-  `;
+
+  const typeOpts = '<option value="">Type</option>' +
+    VENUE_TYPES.map(function(t) { return '<option value="' + t + '">' + t + '</option>'; }).join('');
+
+  const wOpts = '<option value="">Wholesaler</option>' +
+    WHOLESALERS.map(function(w) { return '<option value="' + w + '">' + w + '</option>'; }).join('');
+
+  tr.innerHTML =
+    '<td><input class="venue-row-input" type="text" placeholder="Venue name" oninput="recalcTotals()"></td>' +
+    '<td><select class="venue-row-select">' + typeOpts + '</select></td>' +
+    '<td>' +
+      '<select class="venue-row-select" onchange="handleWholesalerChange(this,' + id + ')">' + wOpts + '</select>' +
+      '<input class="venue-row-input" type="text" id="w-other-' + id + '" placeholder="Enter wholesaler name" style="display:none;margin-top:6px;" oninput="recalcTotals()">' +
+    '</td>' +
+    '<td><input class="venue-row-input num" type="number" placeholder="0" min="0" oninput="recalcTotals()"></td>' +
+    '<td><input class="venue-row-input num" type="number" placeholder="0" min="0"></td>' +
+    '<td><button class="remove-row-btn" onclick="removeVenueRow(' + id + ')" title="Remove">&times;</button></td>';
+
   tbody.appendChild(tr);
   recalcTotals();
 }

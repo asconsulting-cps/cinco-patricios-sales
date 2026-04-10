@@ -394,6 +394,37 @@ header {
 .kpi-delta { font-size: 11px; margin-top: 6px; color: var(--ink3); }
 .kpi-delta.up { color: var(--agave3); }
 
+/* ── ANNUAL TARGET TRACKER ──────────────────────── */
+.target-card {
+  background: var(--agave);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-bottom: 28px;
+  color: var(--cream);
+}
+.target-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.target-heading { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--agave3); margin-bottom: 6px; }
+.target-main { font-family: var(--serif); font-size: 42px; font-weight: 600; color: var(--gold2); line-height: 1; }
+.target-sub { font-size: 11px; color: var(--agave3); margin-top: 5px; }
+.target-stats { text-align: right; }
+.target-stats-val { font-family: var(--serif); font-size: 22px; font-weight: 600; color: var(--cream); }
+.target-stats-lbl { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--agave3); margin-top: 3px; }
+.target-bar-wrap { background: var(--agave2); border-radius: 4px; height: 8px; width: 100%; overflow: hidden; margin-bottom: 10px; }
+.target-bar-fill { height: 100%; border-radius: 4px; background: var(--gold); transition: width 0.6s ease; }
+.target-bar-fill.danger { background: #C84040; }
+.target-meta { display: flex; justify-content: space-between; font-size: 10px; color: var(--agave3); }
+.target-split { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--agave2); border-radius: 8px; overflow: hidden; margin-top: 18px; }
+.target-split-cell { background: var(--agave); padding: 12px 14px; }
+.target-split-cell .lbl { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--agave3); margin-bottom: 4px; }
+.target-split-cell .val { font-family: var(--serif); font-size: 18px; font-weight: 600; color: var(--gold2); }
+
 .section-head {
   font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ink3);
   padding-bottom: 10px; border-bottom: 1px solid var(--smoke); margin-bottom: 16px;
@@ -598,30 +629,67 @@ header {
 <!-- ══ DASHBOARD ══════════════════════════════════════════ -->
 <div id="view-dashboard" class="view">
   <div class="page-header">
-    <div class="week-pill">Week of 7 Apr 2026</div>
+    <div class="week-pill" id="dash-week-label">Current week</div>
     <h1>Team <em>overview</em></h1>
-    <p>3 reps tracked · sample data shown below</p>
+    <p>Updates as the team submits their check-ins.</p>
+  </div>
+
+  <!-- Annual Target Tracker -->
+  <div class="target-card">
+    <div class="target-top">
+      <div>
+        <div class="target-heading">2026 annual bottle target</div>
+        <div class="target-main" id="target-remaining">4,831</div>
+        <div class="target-sub">bottles remaining to hit <span style="color:var(--gold2);">5,500</span> target</div>
+      </div>
+      <div class="target-stats">
+        <div class="target-stats-val" id="target-sold">669</div>
+        <div class="target-stats-lbl">sold so far</div>
+      </div>
+    </div>
+    <div class="target-bar-wrap">
+      <div class="target-bar-fill" id="target-bar" style="width:12.2%"></div>
+    </div>
+    <div class="target-meta">
+      <span id="target-pct">12.2% of target reached</span>
+      <span>5,500 bottles by Dec 2026</span>
+    </div>
+    <div class="target-split">
+      <div class="target-split-cell">
+        <div class="lbl">Jan</div>
+        <div class="val">200</div>
+      </div>
+      <div class="target-split-cell">
+        <div class="lbl">Feb</div>
+        <div class="val">120</div>
+      </div>
+      <div class="target-split-cell">
+        <div class="lbl">Mar</div>
+        <div class="val">349</div>
+      </div>
+      <div class="target-split-cell" id="split-this-month" style="display:none;">
+        <div class="lbl" id="split-month-lbl">Apr</div>
+        <div class="val" id="split-month-val">0</div>
+      </div>
+    </div>
   </div>
 
   <div class="kpi-row">
     <div class="kpi-card">
       <div class="kpi-label">Total calls</div>
-      <div class="kpi-val">47</div>
-      <div class="kpi-delta up">↑ 12 vs last week</div>
+      <div class="kpi-val" id="dash-calls">—</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Total contacts</div>
-      <div class="kpi-val">31</div>
-      <div class="kpi-delta up">↑ 8 vs last week</div>
+      <div class="kpi-val" id="dash-contacts">—</div>
     </div>
     <div class="kpi-card">
-      <div class="kpi-label">Bottles sold</div>
-      <div class="kpi-val">24</div>
-      <div class="kpi-delta up">↑ 4 vs last week</div>
+      <div class="kpi-label">Bottles sold this week</div>
+      <div class="kpi-val" id="dash-sales">—</div>
     </div>
   </div>
 
-  <div class="section-head">Rep breakdown — week of 7 Apr</div>
+  <div class="section-head">Rep breakdown</div>
   <table class="rep-table">
     <thead>
       <tr>
@@ -637,30 +705,30 @@ header {
     <tbody>
       <tr>
         <td><div class="rep-name">Adam</div></td>
-        <td><span class="badge badge-done">Submitted</span></td>
-        <td>18</td>
-        <td>12</td>
-        <td>9</td>
-        <td>The Shelbourne <span style="color:var(--ink3);font-size:11px;">· Hotel</span></td>
-        <td>Barry's</td>
+        <td><span class="badge badge-missing" id="status-adam">Not submitted</span></td>
+        <td id="d-adam-calls">—</td>
+        <td id="d-adam-contacts">—</td>
+        <td id="d-adam-sales">—</td>
+        <td id="d-adam-venue">—</td>
+        <td id="d-adam-w">—</td>
       </tr>
       <tr>
         <td><div class="rep-name">Gráinne</div></td>
-        <td><span class="badge badge-done">Submitted</span></td>
-        <td>16</td>
-        <td>11</td>
-        <td>10</td>
-        <td>Fade Street Social <span style="color:var(--ink3);font-size:11px;">· Restaurant</span></td>
-        <td>Direct sale</td>
+        <td><span class="badge badge-missing" id="status-grainne">Not submitted</span></td>
+        <td id="d-grainne-calls">—</td>
+        <td id="d-grainne-contacts">—</td>
+        <td id="d-grainne-sales">—</td>
+        <td id="d-grainne-venue">—</td>
+        <td id="d-grainne-w">—</td>
       </tr>
       <tr>
         <td><div class="rep-name">Paul</div></td>
-        <td><span class="badge badge-missing">Not submitted</span></td>
-        <td>—</td>
-        <td>—</td>
-        <td>—</td>
-        <td>—</td>
-        <td>—</td>
+        <td><span class="badge badge-missing" id="status-paul">Not submitted</span></td>
+        <td id="d-paul-calls">—</td>
+        <td id="d-paul-contacts">—</td>
+        <td id="d-paul-sales">—</td>
+        <td id="d-paul-venue">—</td>
+        <td id="d-paul-w">—</td>
       </tr>
     </tbody>
   </table>
@@ -670,11 +738,8 @@ header {
     <thead>
       <tr><th>Venue</th><th>Type</th><th>Rep</th><th>Wholesaler</th><th>Sales</th><th>Week</th></tr>
     </thead>
-    <tbody>
-      <tr><td>The Shelbourne</td><td>Hotel</td><td>Adam</td><td>Barry's</td><td>9</td><td>7 Apr</td></tr>
-      <tr><td>Fade Street Social</td><td>Restaurant</td><td>Gráinne</td><td>Direct sale</td><td>10</td><td>7 Apr</td></tr>
-      <tr><td>The Merrion</td><td>Hotel</td><td>Adam</td><td>BWG</td><td>6</td><td>31 Mar</td></tr>
-      <tr><td>Grogan's</td><td>Bar</td><td>Paul</td><td>J&amp;C Kenny</td><td>5</td><td>31 Mar</td></tr>
+    <tbody id="venue-tbody">
+      <tr><td colspan="6" style="color:var(--ink3);text-align:center;padding:24px;">No submissions yet — venue activity will appear here once the team starts logging.</td></tr>
     </tbody>
   </table>
 </div>
@@ -682,54 +747,52 @@ header {
 <!-- ══ EMAIL DIGEST ═══════════════════════════════════════ -->
 <div id="view-email" class="view">
   <div class="page-header">
-    <div class="week-pill">Preview — sent Fridays at 5pm</div>
+    <div class="week-pill">Format preview</div>
     <h1>Email <em>digest</em></h1>
-    <p>What the team receives every Friday evening.</p>
+    <p>Format of the Friday email — numbers populate from real submissions.</p>
   </div>
 
   <div class="email-shell">
     <div class="email-top">
       <h2>Cinco Patricio's — <em>weekly digest</em></h2>
-      <p>Week of 7 Apr 2026 · Sales report</p>
+      <p id="email-week-label">Week ending — · Sales report</p>
     </div>
     <div class="email-body">
       <div class="email-sec">
         <div class="email-sec-title">This week at a glance</div>
         <div class="email-kpis">
-          <div class="email-kpi"><div class="n">47</div><div class="l">Calls</div></div>
-          <div class="email-kpi"><div class="n">31</div><div class="l">Contacts</div></div>
-          <div class="email-kpi"><div class="n">24</div><div class="l">Sales</div></div>
+          <div class="email-kpi"><div class="n" id="e-calls">—</div><div class="l">Calls</div></div>
+          <div class="email-kpi"><div class="n" id="e-contacts">—</div><div class="l">Contacts</div></div>
+          <div class="email-kpi"><div class="n" id="e-sales">—</div><div class="l">Sales</div></div>
         </div>
       </div>
       <div class="email-sec">
         <div class="email-sec-title">Rep summary</div>
         <div class="email-rep">
           <span class="email-rep-name">Adam</span>
-          <span style="color:var(--ink3)">18 calls · 12 contacts · 9 sales</span>
+          <span style="color:var(--ink3)" id="e-adam-summary">No check-in submitted</span>
         </div>
         <div class="email-rep">
           <span class="email-rep-name">Gráinne</span>
-          <span style="color:var(--ink3)">16 calls · 11 contacts · 10 sales</span>
+          <span style="color:var(--ink3)" id="e-grainne-summary">No check-in submitted</span>
         </div>
         <div class="email-rep">
           <span class="email-rep-name">Paul</span>
-          <span style="color:#C03030">No check-in submitted this week</span>
+          <span style="color:var(--ink3)" id="e-paul-summary">No check-in submitted</span>
         </div>
       </div>
       <div class="email-sec">
-        <div class="email-sec-title">Venue highlights</div>
-        <div class="email-hi">
-          Gráinne closed a direct sale at Fade Street Social (10 bottles). Adam has The Shelbourne listing through Barry &amp; Fitzwilliam — follow-up booked.
-        </div>
+        <div class="email-sec-title">Notes &amp; highlights</div>
+        <div class="email-hi" id="e-highlights" style="color:var(--ink3);">Highlights will appear here as the team submits their check-ins.</div>
       </div>
       <div class="email-sec">
-        <div class="email-sec-title">Route to market breakdown</div>
-        <div style="font-family:var(--mono);font-size:12px;line-height:2;color:var(--ink2);">
-          Direct sale — 1 venue<br>
-          BWG — 0 venues this week<br>
-          Classic Drinks — 0 venues this week<br>
-          Barry's — 1 venue<br>
-          J&amp;C Kenny — 0 venues this week
+        <div class="email-sec-title">Route to market</div>
+        <div style="font-family:var(--mono);font-size:12px;line-height:2;color:var(--ink2);" id="e-routes">
+          Direct sale — 0 venues<br>
+          BWG — 0 venues<br>
+          Classic Drinks — 0 venues<br>
+          Barry's — 0 venues<br>
+          J&amp;C Kenny — 0 venues
         </div>
       </div>
     </div>
@@ -754,7 +817,7 @@ header {
 
   <div class="setup-notice">
     <strong>Step 2 — Create a Google Apps Script Web App</strong><br>
-    In your Sheet, click <em>Extensions → Apps Script</em>. Delete any existing code and paste this:
+    In your Sheet, click <em>Extensions → Apps Script</em>. Delete any existing code and paste this. This version includes a <em>doGet</em> function so the dashboard can read the live bottle total directly from your Sheet on every load:
     <div class="script-block">function doPost(e) {
   var sheet = SpreadsheetApp
     .getActiveSpreadsheet()
@@ -779,10 +842,31 @@ header {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-function doGet() {
+function doGet(e) {
+  var sheet = SpreadsheetApp
+    .getActiveSpreadsheet()
+    .getSheetByName('Sheet1');
+  var rows = sheet.getDataRange().getValues();
+  // Column H (index 7) is Sales. Row 0 is the header row.
+  var baseline = 669; // Jan 200 + Feb 120 + Mar 349
+  var totalSold = baseline;
+  var monthSales = 0;
+  var currentMonth = new Date().getMonth(); // 0=Jan
+  for (var i = 1; i < rows.length; i++) {
+    var val = parseInt(rows[i][7]);
+    if (!isNaN(val)) {
+      totalSold += val;
+      // Also tally current month from col B (weekEnding date string)
+      var rowDate = new Date(rows[i][1]);
+      if (!isNaN(rowDate) && rowDate.getMonth() === currentMonth) {
+        monthSales += val;
+      }
+    }
+  }
+  var result = { status: 'ok', totalSold: totalSold, monthSales: monthSales };
   return ContentService
-    .createTextOutput('Cinco Patricio\'s — endpoint live')
-    .setMimeType(ContentService.MimeType.TEXT);
+    .createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
 }</div>
   </div>
 
@@ -820,7 +904,9 @@ function doGet() {
 const STATE = {
   venueType: '',
   wholesaler: '',
-  scriptUrl: localStorage.getItem('cp_script_url') || ''
+  scriptUrl: localStorage.getItem('cp_script_url') || '',
+  totalSold: parseInt(localStorage.getItem('cp_total_sold') || '669'),
+  TARGET: 5500
 };
 
 // ── INIT ───────────────────────────────────────────────────
@@ -830,7 +916,55 @@ const STATE = {
   updateUrlDisplay();
   const saved = localStorage.getItem('cp_script_url');
   if (saved) document.getElementById('script-url-input').value = saved;
+  // Render with local fallback first, then fetch live from Sheets
+  renderTarget(STATE.totalSold);
+  if (STATE.scriptUrl) fetchLiveTotal();
 })();
+
+async function fetchLiveTotal() {
+  try {
+    const res = await fetch(STATE.scriptUrl + '?action=totals', { mode: 'cors' });
+    const data = await res.json();
+    if (data && typeof data.totalSold === 'number') {
+      STATE.totalSold = data.totalSold;
+      localStorage.setItem('cp_total_sold', data.totalSold);
+      renderTarget(data.totalSold);
+      // Update the current month cell from sheet too if provided
+      if (typeof data.monthSales === 'number') {
+        localStorage.setItem('cp_month_sales', data.monthSales);
+      }
+    }
+  } catch(e) {
+    // Silently fall back to localStorage value — no disruption to the user
+    console.log('Could not fetch live total from Sheets, using cached value.');
+  }
+}
+
+function renderTarget(sold) {
+  const remaining = STATE.TARGET - sold;
+  const pct = Math.min((sold / STATE.TARGET) * 100, 100);
+  const fmt = n => n.toLocaleString('en-IE');
+  const el = id => document.getElementById(id);
+  if (el('target-remaining')) el('target-remaining').textContent = fmt(Math.max(remaining, 0));
+  if (el('target-sold')) el('target-sold').textContent = fmt(sold);
+  if (el('target-pct')) el('target-pct').textContent = pct.toFixed(1) + '% of target reached';
+  const bar = el('target-bar');
+  if (bar) {
+    bar.style.width = pct.toFixed(1) + '%';
+    bar.className = 'target-bar-fill' + (pct < 20 ? ' danger' : '');
+  }
+  // Show current month cell
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const currentMonth = months[new Date().getMonth()];
+  const cell = el('split-this-month');
+  const lbl = el('split-month-lbl');
+  if (cell && lbl && !['Jan','Feb','Mar'].includes(currentMonth)) {
+    cell.style.display = 'block';
+    lbl.textContent = currentMonth;
+    const monthSales = parseInt(localStorage.getItem('cp_month_sales') || '0');
+    if (el('split-month-val')) el('split-month-val').textContent = monthSales;
+  }
+}
 
 function populateWeeks() {
   const sel = document.getElementById('week-select');
@@ -930,7 +1064,7 @@ async function submitCheckin() {
   if (!STATE.scriptUrl) {
     // No endpoint — demo mode
     await new Promise(r => setTimeout(r, 800));
-    showSuccess();
+    showSuccess(payload);
     btn.disabled = true;
     status.textContent = '';
     console.log('Payload (no endpoint configured):', payload);
@@ -944,7 +1078,7 @@ async function submitCheckin() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    showSuccess();
+    showSuccess(payload);
     status.textContent = '';
   } catch (err) {
     btn.disabled = false;
@@ -953,9 +1087,94 @@ async function submitCheckin() {
   }
 }
 
-function showSuccess() {
+function showSuccess(payload) {
+  // Update running annual total
+  STATE.totalSold += payload.sales;
+  localStorage.setItem('cp_total_sold', STATE.totalSold);
+  // Update current month tally
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const mon = months[new Date().getMonth()];
+  if (!['Jan','Feb','Mar'].includes(mon)) {
+    const prev = parseInt(localStorage.getItem('cp_month_sales') || '0');
+    localStorage.setItem('cp_month_sales', prev + payload.sales);
+  }
+  renderTarget(STATE.totalSold);
   document.getElementById('success-banner').style.display = 'block';
   document.getElementById('success-banner').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  updateDashboard(payload);
+  updateEmailDigest(payload);
+}
+
+function updateDashboard(p) {
+  const repKey = p.rep.toLowerCase().replace(/[^a-z]/g,'');
+  const statusEl = document.getElementById('status-' + repKey);
+  if (statusEl) {
+    statusEl.textContent = 'Submitted';
+    statusEl.className = 'badge badge-done';
+  }
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('d-' + repKey + '-calls', p.calls);
+  set('d-' + repKey + '-contacts', p.contacts);
+  set('d-' + repKey + '-sales', p.sales);
+  set('d-' + repKey + '-venue', p.venue + ' · ' + p.venueType);
+  set('d-' + repKey + '-w', p.wholesaler);
+
+  // Recalculate totals from all submitted data
+  let tc = 0, tco = 0, ts = 0;
+  ['adam','grainne','paul'].forEach(r => {
+    const c = document.getElementById('d-' + r + '-calls');
+    const co = document.getElementById('d-' + r + '-contacts');
+    const s = document.getElementById('d-' + r + '-sales');
+    if (c && c.textContent !== '—') tc += parseInt(c.textContent) || 0;
+    if (co && co.textContent !== '—') tco += parseInt(co.textContent) || 0;
+    if (s && s.textContent !== '—') ts += parseInt(s.textContent) || 0;
+  });
+  set('dash-calls', tc || '—');
+  set('dash-contacts', tco || '—');
+  set('dash-sales', ts || '—');
+
+  // Add row to venue table
+  const tbody = document.getElementById('venue-tbody');
+  // Remove empty state row if present
+  if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
+  const weekLabel = document.getElementById('week-select');
+  const wk = weekLabel && weekLabel.selectedOptions[0] ? weekLabel.selectedOptions[0].text : p.weekEnding;
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td>' + p.venue + '</td><td>' + p.venueType + '</td><td>' + p.rep + '</td><td>' + p.wholesaler + '</td><td>' + p.sales + '</td><td>' + wk + '</td>';
+  tbody.insertBefore(tr, tbody.firstChild);
+}
+
+function updateEmailDigest(p) {
+  const repKey = p.rep.toLowerCase().replace(/[^a-z]/g,'');
+  const summaryEl = document.getElementById('e-' + repKey + '-summary');
+  if (summaryEl) {
+    summaryEl.textContent = p.calls + ' calls · ' + p.contacts + ' contacts · ' + p.sales + ' sales';
+    summaryEl.style.color = 'var(--ink3)';
+  }
+  // Update totals
+  const ec = document.getElementById('e-calls');
+  const eco = document.getElementById('e-contacts');
+  const es = document.getElementById('e-sales');
+  const tc = parseInt(ec.textContent) || 0;
+  const tco = parseInt(eco.textContent) || 0;
+  const ts = parseInt(es.textContent) || 0;
+  ec.textContent = tc + p.calls;
+  eco.textContent = tco + p.contacts;
+  es.textContent = ts + p.sales;
+  // Highlight
+  if (p.notes) {
+    const hi = document.getElementById('e-highlights');
+    if (hi) {
+      if (hi.style.color === 'var(--ink3)') hi.textContent = '';
+      hi.style.color = 'var(--ink2)';
+      hi.textContent += (hi.textContent ? ' ' : '') + p.rep + ': ' + p.notes;
+    }
+  }
+  // Week label
+  const weekLabel = document.getElementById('week-select');
+  const wk = weekLabel && weekLabel.selectedOptions[0] ? weekLabel.selectedOptions[0].text : p.weekEnding;
+  const wlEl = document.getElementById('email-week-label');
+  if (wlEl) wlEl.textContent = 'Week ending ' + wk + ' · Sales report';
 }
 function showError(msg) {
   const el = document.getElementById('error-banner');

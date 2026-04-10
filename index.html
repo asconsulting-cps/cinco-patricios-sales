@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cinco Patricio's — Sales Standup</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --agave:    #1A3A2A;
+  --agave2:   #254D38;
+  --agave3:   #30663F;
+  --gold:     #C9973A;
+  --gold2:    #E8B558;
+  --gold-lt:  #F5E9D4;
+  --cream:    #FAF6EE;
+  --parchment:#F0E9D8;
+  --earth:    #8B6B45;
+  --ink:      #1C1208;
+  --ink2:     #4A3B27;
+  --ink3:     #8A7860;
+  --smoke:    #D8D0C0;
+  --serif:    'Playfair Display', Georgia, serif;
+  --mono:     'Courier Prime', 'Courier New', monospace;
+  --border-r: 6px;
+}
+
+body {
+  font-family: var(--mono);
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 13px;
+}
+
+/* ── HEADER ─────────────────────────────────────── */
+header {
+  background: var(--agave);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 2px solid var(--gold);
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.brand-name {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--gold2);
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+.brand-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--agave3);
+  padding-top: 2px;
+}
+
+.nav-tabs { display: flex; gap: 3px; }
+.nav-tab {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 7px 16px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  color: var(--smoke);
+  background: transparent;
+  transition: all 0.15s;
+}
+.nav-tab:hover { color: var(--gold2); border-color: var(--agave3); }
+.nav-tab.active { background: var(--gold); color: var(--agave); border-color: var(--gold); font-weight: 700; }
+
+/* ── LAYOUT ─────────────────────────────────────── */
+.view { display: none; padding: 40px 32px; max-width: 820px; margin: 0 auto; }
+.view.active { display: block; animation: fadeUp 0.25s ease; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── PAGE HEADER ────────────────────────────────── */
+.page-header { margin-bottom: 36px; }
+.week-pill {
+  display: inline-block;
+  background: var(--agave);
+  color: var(--gold2);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+.page-header h1 {
+  font-family: var(--serif);
+  font-size: 36px;
+  font-weight: 400;
+  color: var(--agave);
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+}
+.page-header h1 em { font-style: italic; color: var(--gold); }
+.page-header p { color: var(--ink3); font-size: 12px; margin-top: 8px; }
+
+/* ── SETUP PANEL ────────────────────────────────── */
+.setup-panel {
+  background: var(--agave);
+  border-radius: 12px;
+  padding: 22px 26px;
+  margin-bottom: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  border: 1px solid var(--agave2);
+}
+.setup-panel label { display: block; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--agave3); margin-bottom: 6px; }
+.setup-select {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--agave2);
+  border: 1px solid var(--agave3);
+  border-radius: var(--border-r);
+  padding: 10px 14px;
+  color: var(--gold2);
+  outline: none;
+  width: 100%;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23C9973A'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+.setup-select option { background: var(--agave2); }
+
+/* ── CARD ───────────────────────────────────────── */
+.card {
+  background: white;
+  border: 1px solid var(--smoke);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  transition: box-shadow 0.2s;
+}
+.card:focus-within { box-shadow: 0 0 0 3px rgba(201,151,58,0.25); }
+
+.card-head {
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--parchment);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--cream);
+}
+.q-badge {
+  width: 26px; height: 26px;
+  background: var(--agave);
+  color: var(--gold2);
+  font-family: var(--serif);
+  font-size: 13px;
+  font-style: italic;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.q-title { font-size: 13px; font-weight: 700; color: var(--ink); }
+.q-hint { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+.card-body { padding: 20px 22px; }
+
+/* ── VENUE FIELDS ───────────────────────────────── */
+.venue-grid { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
+.venue-input {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--cream);
+  border: 1px solid var(--smoke);
+  border-radius: var(--border-r);
+  padding: 11px 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.venue-input:focus { border-color: var(--gold); }
+.venue-input::placeholder { color: var(--smoke); }
+
+.type-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.type-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  padding: 9px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--smoke);
+  background: var(--cream);
+  color: var(--ink3);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.type-btn:hover { border-color: var(--gold); color: var(--gold); }
+.type-btn.selected { background: var(--gold); border-color: var(--gold); color: var(--agave); font-weight: 700; }
+
+/* ── METRIC ROW ─────────────────────────────────── */
+.metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.metric-wrap { display: flex; flex-direction: column; gap: 6px; }
+.metric-label {
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3);
+}
+.metric-input {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--agave);
+  background: var(--cream);
+  border: 1px solid var(--smoke);
+  border-radius: var(--border-r);
+  padding: 12px 16px;
+  width: 100%;
+  outline: none;
+  text-align: center;
+  transition: border-color 0.15s;
+  -moz-appearance: textfield;
+}
+.metric-input::-webkit-outer-spin-button,
+.metric-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.metric-input:focus { border-color: var(--gold); }
+
+/* ── WHOLESALER ─────────────────────────────────── */
+.wholesaler-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.w-btn {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 11px 14px;
+  border-radius: var(--border-r);
+  border: 1px solid var(--smoke);
+  background: var(--cream);
+  color: var(--ink2);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  display: flex; align-items: center; gap: 8px;
+}
+.w-btn::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--smoke); flex-shrink: 0; transition: background 0.15s; }
+.w-btn:hover { border-color: var(--gold); }
+.w-btn.selected { background: var(--gold-lt); border-color: var(--gold); color: var(--ink); font-weight: 700; }
+.w-btn.selected::before { background: var(--gold); }
+
+.wholesaler-other {
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--cream);
+  border: 1px solid var(--smoke);
+  border-radius: var(--border-r);
+  padding: 10px 14px;
+  width: 100%;
+  outline: none;
+  display: none;
+}
+.wholesaler-other:focus { border-color: var(--gold); }
+.wholesaler-other.visible { display: block; }
+
+/* ── NOTES ──────────────────────────────────────── */
+.note-area {
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink);
+  background: var(--cream);
+  border: 1px solid var(--smoke);
+  border-radius: var(--border-r);
+  padding: 14px 16px;
+  width: 100%;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.note-area:focus { border-color: var(--gold); }
+.note-area::placeholder { color: var(--smoke); }
+
+/* ── SUBMIT ─────────────────────────────────────── */
+.submit-row { margin-top: 28px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.submit-btn {
+  background: var(--agave);
+  color: var(--gold2);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 14px 36px;
+  border: 2px solid var(--agave);
+  border-radius: var(--border-r);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 700;
+}
+.submit-btn:hover { background: var(--gold); border-color: var(--gold); color: var(--agave); }
+.submit-btn:active { transform: scale(0.98); }
+.submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.submit-status { font-size: 12px; color: var(--ink3); }
+
+/* ── BANNER ─────────────────────────────────────── */
+.success-banner {
+  display: none;
+  background: var(--agave);
+  border: 1px solid var(--agave3);
+  border-radius: 10px;
+  padding: 20px 26px;
+  margin-top: 24px;
+  color: var(--gold2);
+}
+.success-banner strong { font-family: var(--serif); font-size: 16px; font-style: italic; }
+.success-banner p { color: var(--agave3); font-size: 12px; margin-top: 6px; }
+
+.error-banner {
+  display: none;
+  background: #FDE8E8;
+  border: 1px solid #F0AAAA;
+  border-radius: 10px;
+  padding: 16px 22px;
+  margin-top: 16px;
+  color: #8B2020;
+  font-size: 12px;
+}
+
+/* ── SETUP NOTICE ───────────────────────────────── */
+.setup-notice {
+  background: var(--gold-lt);
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-bottom: 28px;
+  font-size: 12px;
+  color: var(--ink2);
+  line-height: 1.8;
+}
+.setup-notice strong { color: var(--agave); font-weight: 700; }
+.setup-notice code {
+  background: var(--parchment);
+  border: 1px solid var(--smoke);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+  color: var(--agave);
+  display: block;
+  margin: 8px 0;
+  word-break: break-all;
+}
+.script-block {
+  background: var(--agave);
+  color: var(--gold2);
+  border-radius: 8px;
+  padding: 16px 18px;
+  font-size: 11px;
+  line-height: 1.7;
+  margin: 12px 0;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* ── DASHBOARD ───────────────────────────────────── */
+.kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+.kpi-card {
+  background: white;
+  border: 1px solid var(--smoke);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+.kpi-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3); margin-bottom: 6px; }
+.kpi-val { font-family: var(--serif); font-size: 36px; font-weight: 600; color: var(--agave); line-height: 1; }
+.kpi-delta { font-size: 11px; margin-top: 6px; color: var(--ink3); }
+.kpi-delta.up { color: var(--agave3); }
+
+.section-head {
+  font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ink3);
+  padding-bottom: 10px; border-bottom: 1px solid var(--smoke); margin-bottom: 16px;
+}
+
+.rep-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+.rep-table th { text-align: left; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink3); padding: 8px 12px; border-bottom: 1px solid var(--smoke); font-weight: 400; }
+.rep-table td { padding: 13px 12px; border-bottom: 1px solid var(--parchment); font-size: 12px; vertical-align: middle; }
+.rep-table tr:last-child td { border-bottom: none; }
+.rep-table tr:hover td { background: var(--cream); }
+.rep-name { font-family: var(--serif); font-weight: 600; font-size: 14px; color: var(--agave); }
+
+.badge { display: inline-block; font-size: 10px; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.3px; }
+.badge-done { background: #E6F2EB; color: #1A5C32; }
+.badge-missing { background: #FDE8E8; color: #8B2020; }
+
+/* ── EMAIL ───────────────────────────────────────── */
+.email-shell {
+  background: white;
+  border: 1px solid var(--smoke);
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 580px;
+  margin: 0 auto;
+  font-family: Georgia, serif;
+}
+.email-top {
+  background: var(--agave);
+  padding: 30px 36px;
+  border-bottom: 3px solid var(--gold);
+}
+.email-top h2 { font-family: var(--serif); font-size: 28px; font-weight: 400; color: var(--gold2); letter-spacing: -0.5px; }
+.email-top h2 em { font-style: italic; }
+.email-top p { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--agave3); margin-top: 6px; }
+.email-body { padding: 28px 36px; }
+.email-sec { margin-bottom: 22px; }
+.email-sec-title { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--ink3); padding-bottom: 8px; border-bottom: 1px solid var(--parchment); margin-bottom: 12px; }
+.email-kpis { display: flex; gap: 10px; }
+.email-kpi { flex: 1; text-align: center; padding: 14px; background: var(--cream); border-radius: 8px; }
+.email-kpi .n { font-family: var(--mono); font-size: 24px; font-weight: 700; color: var(--agave); }
+.email-kpi .l { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--ink3); margin-top: 3px; }
+.email-rep { display: flex; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--parchment); gap: 8px; font-family: var(--mono); font-size: 12px; }
+.email-rep:last-child { border: none; }
+.email-rep-name { font-weight: 700; flex: 1; color: var(--agave); }
+.email-hi { background: var(--gold-lt); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; padding: 12px 16px; font-family: var(--mono); font-size: 12px; color: var(--ink2); }
+.email-foot { background: var(--parchment); padding: 14px 36px; font-family: var(--mono); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink3); text-align: center; }
+
+@media (max-width: 600px) {
+  header { padding: 0 16px; }
+  .brand-tag { display: none; }
+  .view { padding: 24px 16px; }
+  .setup-panel { grid-template-columns: 1fr; }
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .metric-row { grid-template-columns: repeat(3, 1fr); }
+  .wholesaler-grid { grid-template-columns: 1fr; }
+  .venue-grid { grid-template-columns: 1fr; }
+  .email-kpis { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-name">Cinco Patricio's</div>
+    <div class="brand-tag">Sales Tracker</div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('checkin',this)">Check-in</button>
+    <button class="nav-tab" onclick="switchView('dashboard',this)">Dashboard</button>
+    <button class="nav-tab" onclick="switchView('email',this)">Email digest</button>
+    <button class="nav-tab" onclick="switchView('setup',this)">Setup</button>
+  </div>
+</header>
+
+<!-- ══ CHECK-IN ══════════════════════════════════════════ -->
+<div id="view-checkin" class="view active">
+  <div class="page-header">
+    <div class="week-pill" id="checkin-week-label">Week of —</div>
+    <h1>Weekly <em>check-in</em></h1>
+    <p>Log your venue visits, outreach & sales activity for the week.</p>
+  </div>
+
+  <div class="setup-panel">
+    <div>
+      <label>Your name</label>
+      <select class="setup-select" id="rep-select">
+        <option value="">Select rep</option>
+        <option value="Adam">Adam</option>
+        <option value="Gráinne">Gráinne</option>
+        <option value="Paul">Paul</option>
+      </select>
+    </div>
+    <div>
+      <label>Week ending</label>
+      <select class="setup-select" id="week-select"></select>
+    </div>
+  </div>
+
+  <!-- Q1 VENUE -->
+  <div class="card">
+    <div class="card-head">
+      <div class="q-badge">1</div>
+      <div>
+        <div class="q-title">Venue details</div>
+        <div class="q-hint">Name of the account you visited or contacted this week</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="venue-grid">
+        <div>
+          <div class="metric-label" style="margin-bottom:6px;">Venue name</div>
+          <input class="venue-input" type="text" id="venue-name" placeholder="e.g. The Shelbourne, Fade Street Social…">
+        </div>
+        <div>
+          <div class="metric-label" style="margin-bottom:6px;">Venue type</div>
+          <div class="type-row" id="type-row">
+            <button class="type-btn" onclick="selectType(this,'Bar')">Bar</button>
+            <button class="type-btn" onclick="selectType(this,'Hotel')">Hotel</button>
+            <button class="type-btn" onclick="selectType(this,'Restaurant')">Restaurant</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q2 METRICS -->
+  <div class="card">
+    <div class="card-head">
+      <div class="q-badge">2</div>
+      <div>
+        <div class="q-title">Activity this week</div>
+        <div class="q-hint">Your total outreach numbers — calls made, contacts reached, bottles sold</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="metric-row">
+        <div class="metric-wrap">
+          <div class="metric-label">Calls</div>
+          <input class="metric-input" type="number" id="calls" placeholder="0" min="0">
+        </div>
+        <div class="metric-wrap">
+          <div class="metric-label">Contacts</div>
+          <input class="metric-input" type="number" id="contacts" placeholder="0" min="0">
+        </div>
+        <div class="metric-wrap">
+          <div class="metric-label">Sales</div>
+          <input class="metric-input" type="number" id="sales" placeholder="0" min="0">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q3 WHOLESALER -->
+  <div class="card">
+    <div class="card-head">
+      <div class="q-badge">3</div>
+      <div>
+        <div class="q-title">Route to market</div>
+        <div class="q-hint">How is this account buying Cinco Patricio's?</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="wholesaler-grid" id="wholesaler-grid">
+        <button class="w-btn" onclick="selectWholesaler(this,'Direct sale')">Direct sale</button>
+        <button class="w-btn" onclick="selectWholesaler(this,'BWG')">BWG</button>
+        <button class="w-btn" onclick="selectWholesaler(this,'Classic Drinks')">Classic Drinks</button>
+        <button class="w-btn" onclick="selectWholesaler(this,'Barry\'s')">Barry's</button>
+        <button class="w-btn" onclick="selectWholesaler(this,'J&C Kenny')">J&amp;C Kenny</button>
+        <button class="w-btn" onclick="selectWholesaler(this,'Other')">Other wholesaler…</button>
+      </div>
+      <input class="wholesaler-other" type="text" id="wholesaler-other" placeholder="Enter wholesaler name">
+    </div>
+  </div>
+
+  <!-- Q4 NOTES -->
+  <div class="card">
+    <div class="card-head">
+      <div class="q-badge">4</div>
+      <div>
+        <div class="q-title">Notes &amp; highlights</div>
+        <div class="q-hint">Anything worth flagging — a win, a follow-up needed, feedback from the venue</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <textarea class="note-area" id="notes" placeholder="e.g. The Shelbourne are listing us on the back bar — follow up with F&B manager next week…"></textarea>
+    </div>
+  </div>
+
+  <div class="submit-row">
+    <button class="submit-btn" id="submit-btn" onclick="submitCheckin()">Submit check-in →</button>
+    <span class="submit-status" id="submit-status"></span>
+  </div>
+
+  <div class="success-banner" id="success-banner">
+    <strong>Submitted — great work.</strong>
+    <p>Your check-in has been saved to the team sheet. The weekly digest goes out on Friday at 5pm.</p>
+  </div>
+  <div class="error-banner" id="error-banner"></div>
+</div>
+
+<!-- ══ DASHBOARD ══════════════════════════════════════════ -->
+<div id="view-dashboard" class="view">
+  <div class="page-header">
+    <div class="week-pill">Week of 7 Apr 2026</div>
+    <h1>Team <em>overview</em></h1>
+    <p>3 reps tracked · sample data shown below</p>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Total calls</div>
+      <div class="kpi-val">47</div>
+      <div class="kpi-delta up">↑ 12 vs last week</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Total contacts</div>
+      <div class="kpi-val">31</div>
+      <div class="kpi-delta up">↑ 8 vs last week</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Bottles sold</div>
+      <div class="kpi-val">24</div>
+      <div class="kpi-delta up">↑ 4 vs last week</div>
+    </div>
+  </div>
+
+  <div class="section-head">Rep breakdown — week of 7 Apr</div>
+  <table class="rep-table">
+    <thead>
+      <tr>
+        <th>Rep</th>
+        <th>Status</th>
+        <th>Calls</th>
+        <th>Contacts</th>
+        <th>Sales</th>
+        <th>Last venue</th>
+        <th>Route</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><div class="rep-name">Adam</div></td>
+        <td><span class="badge badge-done">Submitted</span></td>
+        <td>18</td>
+        <td>12</td>
+        <td>9</td>
+        <td>The Shelbourne <span style="color:var(--ink3);font-size:11px;">· Hotel</span></td>
+        <td>Barry's</td>
+      </tr>
+      <tr>
+        <td><div class="rep-name">Gráinne</div></td>
+        <td><span class="badge badge-done">Submitted</span></td>
+        <td>16</td>
+        <td>11</td>
+        <td>10</td>
+        <td>Fade Street Social <span style="color:var(--ink3);font-size:11px;">· Restaurant</span></td>
+        <td>Direct sale</td>
+      </tr>
+      <tr>
+        <td><div class="rep-name">Paul</div></td>
+        <td><span class="badge badge-missing">Not submitted</span></td>
+        <td>—</td>
+        <td>—</td>
+        <td>—</td>
+        <td>—</td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="section-head">Recent venue activity</div>
+  <table class="rep-table">
+    <thead>
+      <tr><th>Venue</th><th>Type</th><th>Rep</th><th>Wholesaler</th><th>Sales</th><th>Week</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>The Shelbourne</td><td>Hotel</td><td>Adam</td><td>Barry's</td><td>9</td><td>7 Apr</td></tr>
+      <tr><td>Fade Street Social</td><td>Restaurant</td><td>Gráinne</td><td>Direct sale</td><td>10</td><td>7 Apr</td></tr>
+      <tr><td>The Merrion</td><td>Hotel</td><td>Adam</td><td>BWG</td><td>6</td><td>31 Mar</td></tr>
+      <tr><td>Grogan's</td><td>Bar</td><td>Paul</td><td>J&amp;C Kenny</td><td>5</td><td>31 Mar</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══ EMAIL DIGEST ═══════════════════════════════════════ -->
+<div id="view-email" class="view">
+  <div class="page-header">
+    <div class="week-pill">Preview — sent Fridays at 5pm</div>
+    <h1>Email <em>digest</em></h1>
+    <p>What the team receives every Friday evening.</p>
+  </div>
+
+  <div class="email-shell">
+    <div class="email-top">
+      <h2>Cinco Patricio's — <em>weekly digest</em></h2>
+      <p>Week of 7 Apr 2026 · Sales report</p>
+    </div>
+    <div class="email-body">
+      <div class="email-sec">
+        <div class="email-sec-title">This week at a glance</div>
+        <div class="email-kpis">
+          <div class="email-kpi"><div class="n">47</div><div class="l">Calls</div></div>
+          <div class="email-kpi"><div class="n">31</div><div class="l">Contacts</div></div>
+          <div class="email-kpi"><div class="n">24</div><div class="l">Sales</div></div>
+        </div>
+      </div>
+      <div class="email-sec">
+        <div class="email-sec-title">Rep summary</div>
+        <div class="email-rep">
+          <span class="email-rep-name">Adam</span>
+          <span style="color:var(--ink3)">18 calls · 12 contacts · 9 sales</span>
+        </div>
+        <div class="email-rep">
+          <span class="email-rep-name">Gráinne</span>
+          <span style="color:var(--ink3)">16 calls · 11 contacts · 10 sales</span>
+        </div>
+        <div class="email-rep">
+          <span class="email-rep-name">Paul</span>
+          <span style="color:#C03030">No check-in submitted this week</span>
+        </div>
+      </div>
+      <div class="email-sec">
+        <div class="email-sec-title">Venue highlights</div>
+        <div class="email-hi">
+          Gráinne closed a direct sale at Fade Street Social (10 bottles). Adam has The Shelbourne listing through Barry &amp; Fitzwilliam — follow-up booked.
+        </div>
+      </div>
+      <div class="email-sec">
+        <div class="email-sec-title">Route to market breakdown</div>
+        <div style="font-family:var(--mono);font-size:12px;line-height:2;color:var(--ink2);">
+          Direct sale — 1 venue<br>
+          BWG — 0 venues this week<br>
+          Classic Drinks — 0 venues this week<br>
+          Barry's — 1 venue<br>
+          J&amp;C Kenny — 0 venues this week
+        </div>
+      </div>
+    </div>
+    <div class="email-foot">Cinco Patricio's · automated weekly digest</div>
+  </div>
+</div>
+
+<!-- ══ SETUP ══════════════════════════════════════════════ -->
+<div id="view-setup" class="view">
+  <div class="page-header">
+    <div class="week-pill">One-time setup</div>
+    <h1>Google Sheets <em>integration</em></h1>
+    <p>Connect this form to your Google Sheet in about 5 minutes.</p>
+  </div>
+
+  <div class="setup-notice">
+    <strong>Step 1 — Create your Google Sheet</strong><br>
+    Open Google Sheets and create a new spreadsheet. Name it <em>Cinco Patricio's Sales Log</em>.<br>
+    Add this header row in row 1 (one value per cell, A through L):
+    <code>Timestamp | Week Ending | Rep | Venue | Venue Type | Calls | Contacts | Sales | Wholesaler | Notes | Submitted At | Row ID</code>
+  </div>
+
+  <div class="setup-notice">
+    <strong>Step 2 — Create a Google Apps Script Web App</strong><br>
+    In your Sheet, click <em>Extensions → Apps Script</em>. Delete any existing code and paste this:
+    <div class="script-block">function doPost(e) {
+  var sheet = SpreadsheetApp
+    .getActiveSpreadsheet()
+    .getSheetByName('Sheet1');
+  var data = JSON.parse(e.postData.contents);
+  sheet.appendRow([
+    new Date(),
+    data.weekEnding,
+    data.rep,
+    data.venue,
+    data.venueType,
+    data.calls,
+    data.contacts,
+    data.sales,
+    data.wholesaler,
+    data.notes,
+    data.submittedAt,
+    Utilities.getUuid()
+  ]);
+  return ContentService
+    .createTextOutput(JSON.stringify({status:'ok'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet() {
+  return ContentService
+    .createTextOutput('Cinco Patricio\'s — endpoint live')
+    .setMimeType(ContentService.MimeType.TEXT);
+}</div>
+  </div>
+
+  <div class="setup-notice">
+    <strong>Step 3 — Deploy as Web App</strong><br>
+    Click <em>Deploy → New deployment</em>. Set:<br>
+    — Type: <em>Web App</em><br>
+    — Execute as: <em>Me</em><br>
+    — Who has access: <em>Anyone</em><br>
+    Copy the Web App URL and paste it below, then click Save.
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/…/exec"
+        style="font-family:var(--mono);font-size:12px;flex:1;min-width:200px;padding:10px 14px;background:var(--parchment);border:1px solid var(--smoke);border-radius:var(--border-r);color:var(--ink);outline:none;">
+      <button onclick="saveScriptUrl()"
+        style="font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:10px 22px;background:var(--agave);color:var(--gold2);border:none;border-radius:var(--border-r);cursor:pointer;font-weight:700;">
+        Save URL
+      </button>
+    </div>
+    <div id="url-saved-msg" style="display:none;margin-top:8px;font-size:11px;color:var(--agave3);">✓ URL saved — check-ins will now write to your Sheet.</div>
+  </div>
+
+  <div class="setup-notice">
+    <strong>Step 4 — Automate the Friday email (optional)</strong><br>
+    In Apps Script, add a second function to read the week's rows and send a summary email via <em>MailApp.sendEmail()</em>. Set a time-driven trigger for Friday at 5pm. This keeps the digest fully automated with no extra tools.
+  </div>
+
+  <div class="setup-notice" style="background:var(--green-light,#E6F2EB);border-color:var(--agave3);">
+    <strong>Currently connected to:</strong><br>
+    <span id="current-url-display" style="font-size:12px;color:var(--ink3);">No URL saved yet.</span>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────
+const STATE = {
+  venueType: '',
+  wholesaler: '',
+  scriptUrl: localStorage.getItem('cp_script_url') || ''
+};
+
+// ── INIT ───────────────────────────────────────────────────
+(function init() {
+  populateWeeks();
+  updateWeekLabel();
+  updateUrlDisplay();
+  const saved = localStorage.getItem('cp_script_url');
+  if (saved) document.getElementById('script-url-input').value = saved;
+})();
+
+function populateWeeks() {
+  const sel = document.getElementById('week-select');
+  const today = new Date();
+  // Find last Friday
+  const day = today.getDay();
+  const diffToFri = (day <= 5) ? (5 - day) : (5 - day + 7);
+  // Go back to last 8 Fridays
+  for (let i = 0; i < 8; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + diffToFri - (i * 7));
+    const label = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const val = d.toISOString().split('T')[0];
+    const opt = new Option(label, val);
+    if (i === 0) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function updateWeekLabel() {
+  const sel = document.getElementById('week-select');
+  const lbl = document.getElementById('checkin-week-label');
+  if (sel.selectedOptions[0]) {
+    lbl.textContent = 'Week ending ' + sel.selectedOptions[0].text;
+  }
+  sel.addEventListener('change', () => {
+    lbl.textContent = 'Week ending ' + sel.selectedOptions[0].text;
+  });
+}
+
+// ── NAVIGATION ────────────────────────────────────────────
+function switchView(name, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── SELECTORS ─────────────────────────────────────────────
+function selectType(btn, val) {
+  document.querySelectorAll('#type-row .type-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  STATE.venueType = val;
+}
+
+function selectWholesaler(btn, val) {
+  document.querySelectorAll('#wholesaler-grid .w-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  STATE.wholesaler = val;
+  const other = document.getElementById('wholesaler-other');
+  if (val === 'Other') {
+    other.classList.add('visible');
+    other.focus();
+  } else {
+    other.classList.remove('visible');
+    other.value = '';
+  }
+}
+
+// ── SUBMIT ─────────────────────────────────────────────────
+async function submitCheckin() {
+  const rep = document.getElementById('rep-select').value;
+  const weekEnding = document.getElementById('week-select').value;
+  const venue = document.getElementById('venue-name').value.trim();
+  const calls = document.getElementById('calls').value || '0';
+  const contacts = document.getElementById('contacts').value || '0';
+  const sales = document.getElementById('sales').value || '0';
+  const notes = document.getElementById('notes').value.trim();
+  const wholesalerOther = document.getElementById('wholesaler-other').value.trim();
+  const wholesaler = STATE.wholesaler === 'Other' ? wholesalerOther : STATE.wholesaler;
+
+  // Validation
+  if (!rep) return showError('Please select your name.');
+  if (!venue) return showError('Please enter a venue name.');
+  if (!STATE.venueType) return showError('Please select a venue type (Bar, Hotel, or Restaurant).');
+  if (!wholesaler) return showError('Please select a route to market.');
+
+  const payload = {
+    weekEnding,
+    rep,
+    venue,
+    venueType: STATE.venueType,
+    calls: parseInt(calls),
+    contacts: parseInt(contacts),
+    sales: parseInt(sales),
+    wholesaler,
+    notes,
+    submittedAt: new Date().toISOString()
+  };
+
+  const btn = document.getElementById('submit-btn');
+  const status = document.getElementById('submit-status');
+  btn.disabled = true;
+  status.textContent = 'Submitting…';
+  hideError();
+
+  if (!STATE.scriptUrl) {
+    // No endpoint — demo mode
+    await new Promise(r => setTimeout(r, 800));
+    showSuccess();
+    btn.disabled = true;
+    status.textContent = '';
+    console.log('Payload (no endpoint configured):', payload);
+    return;
+  }
+
+  try {
+    await fetch(STATE.scriptUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    showSuccess();
+    status.textContent = '';
+  } catch (err) {
+    btn.disabled = false;
+    status.textContent = '';
+    showError('Could not reach Google Sheets. Check your Apps Script URL in Setup, then try again.');
+  }
+}
+
+function showSuccess() {
+  document.getElementById('success-banner').style.display = 'block';
+  document.getElementById('success-banner').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function showError(msg) {
+  const el = document.getElementById('error-banner');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideError() {
+  document.getElementById('error-banner').style.display = 'none';
+}
+
+// ── SETUP ─────────────────────────────────────────────────
+function saveScriptUrl() {
+  const val = document.getElementById('script-url-input').value.trim();
+  if (!val.startsWith('https://script.google.com')) {
+    alert('That doesn\'t look like a Google Apps Script URL. Please check and try again.');
+    return;
+  }
+  STATE.scriptUrl = val;
+  localStorage.setItem('cp_script_url', val);
+  document.getElementById('url-saved-msg').style.display = 'block';
+  updateUrlDisplay();
+}
+
+function updateUrlDisplay() {
+  const el = document.getElementById('current-url-display');
+  if (STATE.scriptUrl) {
+    el.textContent = STATE.scriptUrl;
+    el.style.color = 'var(--agave)';
+  } else {
+    el.textContent = 'No URL saved yet.';
+    el.style.color = 'var(--ink3)';
+  }
+}
+</script>
+</body>
+</html>

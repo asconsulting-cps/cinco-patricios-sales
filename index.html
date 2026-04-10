@@ -924,66 +924,74 @@ function doGet(e) {
     .getSheetByName('Sheet1');
   var rows = sheet.getDataRange().getValues();
   // Columns: 0=Timestamp,1=WeekEnding,2=Rep,3=Venue,4=VenueType,5=Calls,6=Contacts,7=Sales,8=Wholesaler,9=Notes
+  var tz = Session.getScriptTimeZone();
   var baseline = 669; // Jan 200 + Feb 120 + Mar 349
   var totalSold = baseline;
   var monthlySales = {};
-  // Find current week ending (most recent Friday)
+  // Most recent Friday (past or today)
   var today = new Date();
-  var day = today.getDay();
-  var diffToFri = (day <= 5) ? (5 - day) : (5 - day + 7);
-  var thisFri = new Date(today);
-  thisFri.setDate(today.getDate() + diffToFri);
-  var thisWeekStr = thisFri.toISOString().split('T')[0];
-  // Per-rep totals for current week
+  var day = today.getDay(); // 0=Sun,5=Fri,6=Sat
+  var daysBack = (day === 6) ? 1 : (day === 0) ? 2 : (day + 2) % 7 === 0 ? 0 : day - 5;
+  if (daysBack < 0) daysBack += 7;
+  var lastFri = new Date(today);
+  lastFri.setDate(today.getDate() - daysBack);
+  var thisWeekStr = Utilities.formatDate(lastFri, tz, 'yyyy-MM-dd');
   var repWeek = {};
   var repLastVenue = {};
-  var repSubmitted = {};
-  // Recent rows (last 20)
   var recentRows = [];
 
   for (var i = 1; i < rows.length; i++) {
     var sales = parseInt(rows[i][7]);
-    if (!isNaN(sales) && sales >= 0) {
-      totalSold += sales;
-      var rowDate = new Date(rows[i][1]);
-      if (!isNaN(rowDate.getTime())) {
-        var monthKey = rowDate.getFullYear() + '-' + rowDate.getMonth();
-        monthlySales[monthKey] = (monthlySales[monthKey] || 0) + sales;
+    if (isNaN(sales)) sales = 0;
+    totalSold += sales;
+    // Format the weekEnding cell as yyyy-MM-dd regardless of how Sheets stores it
+    var rowWeekStr = '';
+    try {
+      var we = rows[i][1];
+      if (we instanceof Date) {
+        rowWeekStr = Utilities.formatDate(we, tz, 'yyyy-MM-dd');
+      } else {
+        rowWeekStr = String(we).substring(0, 10);
       }
-      var rowWeek = String(rows[i][1]).split('T')[0];
-      var rep = String(rows[i][2]);
-      if (rowWeek === thisWeekStr) {
-        if (!repWeek[rep]) repWeek[rep] = { calls:0, contacts:0, sales:0 };
-        repWeek[rep].calls    += parseInt(rows[i][5]) || 0;
-        repWeek[rep].contacts += parseInt(rows[i][6]) || 0;
-        repWeek[rep].sales    += sales;
-        repLastVenue[rep] = rows[i][3] + ' (' + rows[i][4] + ')';
-        repSubmitted[rep] = true;
+    } catch(ex) { rowWeekStr = ''; }
+    // Monthly totals
+    try {
+      var rd = new Date(rowWeekStr);
+      if (!isNaN(rd.getTime())) {
+        var mk = rd.getFullYear() + '-' + rd.getMonth();
+        monthlySales[mk] = (monthlySales[mk] || 0) + sales;
       }
-      recentRows.push({
-        week: rowWeek,
-        rep: rep,
-        venue: String(rows[i][3]),
-        venueType: String(rows[i][4]),
-        wholesaler: String(rows[i][8]),
-        sales: sales
-      });
+    } catch(ex2) {}
+    var rep = String(rows[i][2]);
+    // This week's rep totals
+    if (rowWeekStr === thisWeekStr) {
+      if (!repWeek[rep]) repWeek[rep] = { calls:0, contacts:0, sales:0 };
+      repWeek[rep].calls    += parseInt(rows[i][5]) || 0;
+      repWeek[rep].contacts += parseInt(rows[i][6]) || 0;
+      repWeek[rep].sales    += sales;
+      repLastVenue[rep] = String(rows[i][3]) + ' (' + String(rows[i][4]) + ')';
     }
+    // Recent activity
+    recentRows.push({
+      week: rowWeekStr,
+      rep: rep,
+      venue: String(rows[i][3]),
+      venueType: String(rows[i][4]),
+      wholesaler: String(rows[i][8]),
+      sales: sales
+    });
   }
-  // Return last 15 rows most-recent-first
   recentRows = recentRows.reverse().slice(0, 15);
-  var result = {
-    status: 'ok',
-    totalSold: totalSold,
-    monthlySales: monthlySales,
-    thisWeek: thisWeekStr,
-    repWeek: repWeek,
-    repLastVenue: repLastVenue,
-    repSubmitted: repSubmitted,
-    recentRows: recentRows
-  };
   return ContentService
-    .createTextOutput(JSON.stringify(result))
+    .createTextOutput(JSON.stringify({
+      status: 'ok',
+      totalSold: totalSold,
+      monthlySales: monthlySales,
+      thisWeek: thisWeekStr,
+      repWeek: repWeek,
+      repLastVenue: repLastVenue,
+      recentRows: recentRows
+    }))
     .setMimeType(ContentService.MimeType.JSON);
 }</div>
   </div>

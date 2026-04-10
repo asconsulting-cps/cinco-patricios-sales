@@ -458,7 +458,7 @@ header {
 .target-bar-fill { height: 100%; border-radius: 6px; background: var(--gold); transition: width 0.6s ease; }
 .target-bar-fill.danger { background: #E05050; }
 .target-meta { display: flex; justify-content: space-between; font-size: 13px; color: #7AAA88; }
-.target-split { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: rgba(0,0,0,0.2); border-radius: 8px; overflow: hidden; margin-top: 20px; }
+.target-split { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; background: rgba(0,0,0,0.2); border-radius: 8px; overflow: hidden; margin-top: 20px; }
 .target-split-cell { background: var(--agave2); padding: 14px 16px; }
 .target-split-cell .lbl { font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: var(--agave3); margin-bottom: 6px; font-weight: 700; }
 .target-split-cell .val { font-family: var(--serif); font-size: 22px; font-weight: 600; color: var(--gold2); }
@@ -698,7 +698,7 @@ header {
       <span id="target-pct">12.2% of target reached</span>
       <span>5,500 bottles by Dec 2026</span>
     </div>
-    <div class="target-split">
+    <div class="target-split" id="target-split-grid">
       <div class="target-split-cell">
         <div class="lbl">Jan</div>
         <div class="val">200</div>
@@ -711,9 +711,41 @@ header {
         <div class="lbl">Mar</div>
         <div class="val">349</div>
       </div>
-      <div class="target-split-cell" id="split-this-month" style="display:none;">
-        <div class="lbl" id="split-month-lbl">Apr</div>
-        <div class="val" id="split-month-val">0</div>
+      <div class="target-split-cell" id="split-month-3" style="display:none;">
+        <div class="lbl" id="split-month-lbl-3">Apr</div>
+        <div class="val" id="split-month-val-3">0</div>
+      </div>
+      <div class="target-split-cell" id="split-month-4" style="display:none;">
+        <div class="lbl" id="split-month-lbl-4">May</div>
+        <div class="val" id="split-month-val-4">0</div>
+      </div>
+      <div class="target-split-cell" id="split-month-5" style="display:none;">
+        <div class="lbl" id="split-month-lbl-5">Jun</div>
+        <div class="val" id="split-month-val-5">0</div>
+      </div>
+      <div class="target-split-cell" id="split-month-6" style="display:none;">
+        <div class="lbl" id="split-month-lbl-6">Jul</div>
+        <div class="val" id="split-month-val-6">0</div>
+      </div>
+      <div class="target-split-cell" id="split-month-7" style="display:none;">
+        <div class="lbl" id="split-month-lbl-7">Aug</div>
+        <div class="val" id="split-month-val-7">0</div>
+      </div>
+      <div class="target-split-cell" id="split-month-8" style="display:none;">
+        <div class="lbl" id="split-month-lbl-8">Sep</div>
+        <div class="val" id="split-month-val-8">0</div>
+      </div>
+      <div class="target-split-cell" id="split-month-9" style="display:none;">
+        <div class="lbl" id="split-month-lbl-9">Oct</div>
+        <div class="val" id="split-month-val-9">0</div>
+      </div>
+      <div class="target-split-cell" id="split-month-10" style="display:none;">
+        <div class="lbl" id="split-month-lbl-10">Nov</div>
+        <div class="val" id="split-month-val-10">0</div>
+      </div>
+      <div class="target-split-cell" id="split-month-11" style="display:none;">
+        <div class="lbl" id="split-month-lbl-11">Dec</div>
+        <div class="val" id="split-month-val-11">0</div>
       </div>
     </div>
   </div>
@@ -894,20 +926,25 @@ function doGet(e) {
   // Column H (index 7) is Sales. Row 0 is the header row.
   var baseline = 669; // Jan 200 + Feb 120 + Mar 349
   var totalSold = baseline;
-  var monthSales = 0;
-  var currentMonth = new Date().getMonth(); // 0=Jan
+  // Track sales by month (April onwards — index 3+)
+  var monthlySales = {};
   for (var i = 1; i < rows.length; i++) {
     var val = parseInt(rows[i][7]);
-    if (!isNaN(val)) {
+    if (!isNaN(val) && val > 0) {
       totalSold += val;
-      // Also tally current month from col B (weekEnding date string)
+      // Col B (index 1) is weekEnding date
       var rowDate = new Date(rows[i][1]);
-      if (!isNaN(rowDate) && rowDate.getMonth() === currentMonth) {
-        monthSales += val;
+      if (!isNaN(rowDate.getTime())) {
+        var monthKey = rowDate.getFullYear() + '-' + rowDate.getMonth(); // e.g. "2026-3" = Apr
+        monthlySales[monthKey] = (monthlySales[monthKey] || 0) + val;
       }
     }
   }
-  var result = { status: 'ok', totalSold: totalSold, monthSales: monthSales };
+  var result = {
+    status: 'ok',
+    totalSold: totalSold,
+    monthlySales: monthlySales
+  };
   return ContentService
     .createTextOutput(JSON.stringify(result))
     .setMimeType(ContentService.MimeType.JSON);
@@ -1116,6 +1153,14 @@ function submitCheckin() {
 function showSuccess(payload, venueRows) {
   totalSold += payload.sales;
   try { localStorage.setItem('cp_total_sold', totalSold); } catch(e) {}
+  // Update current month cell immediately
+  var nowMonth = new Date().getMonth();
+  if (nowMonth >= 3) {
+    var mCell = document.getElementById('split-month-' + nowMonth);
+    var mVal = document.getElementById('split-month-val-' + nowMonth);
+    if (mCell) mCell.style.display = 'block';
+    if (mVal) mVal.textContent = (parseInt(mVal ? mVal.textContent : '0') || 0) + payload.sales;
+  }
   renderTarget(totalSold);
   updateDashboard(payload, venueRows);
   updateEmailDigest(payload);
@@ -1199,16 +1244,11 @@ function renderTarget(sold) {
     bar.style.width = pct.toFixed(1) + '%';
     bar.className = 'target-bar-fill' + (pct < 20 ? ' danger' : '');
   }
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var currentMonth = months[new Date().getMonth()];
-  var cell = document.getElementById('split-this-month');
-  var lbl = document.getElementById('split-month-lbl');
-  if (cell && lbl && ['Jan','Feb','Mar'].indexOf(currentMonth) === -1) {
-    cell.style.display = 'block';
-    lbl.textContent = currentMonth;
-    var ms = 0;
-    try { ms = parseInt(localStorage.getItem('cp_month_sales') || '0'); } catch(e) {}
-    set('split-month-val', ms);
+  // Show cells for all months up to current month (Apr onwards)
+  var currentMonthIdx = new Date().getMonth(); // 0=Jan
+  for (var mi = 3; mi <= currentMonthIdx; mi++) {
+    var cell = document.getElementById('split-month-' + mi);
+    if (cell) cell.style.display = 'block';
   }
 }
 
@@ -1236,14 +1276,32 @@ function updateUrlDisplay() {
 
 async function fetchLiveTotal() {
   try {
-    var res = await fetch(scriptUrl + '?action=totals', { mode: 'cors' });
+    var res = await fetch(scriptUrl, { mode: 'cors' });
     var data = await res.json();
     if (data && typeof data.totalSold === 'number') {
       totalSold = data.totalSold;
       try { localStorage.setItem('cp_total_sold', totalSold); } catch(e) {}
       renderTarget(totalSold);
+      // Update monthly split cells dynamically
+      if (data.monthlySales) {
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var now = new Date();
+        var year = now.getFullYear();
+        // Update Apr through Dec cells if they exist
+        for (var m = 3; m <= 11; m++) {
+          var key = year + '-' + m;
+          var val = data.monthlySales[key] || 0;
+          var cellId = 'split-month-' + m;
+          var valId = 'split-month-val-' + m;
+          var el = document.getElementById(valId);
+          if (el) el.textContent = val;
+          // Also update the label
+          var lblEl = document.getElementById('split-month-lbl-' + m);
+          if (lblEl) lblEl.textContent = months[m];
+        }
+      }
     }
-  } catch(e) {}
+  } catch(e) { console.log('Could not fetch live total:', e.message); }
 }
 
 // ── INIT (runs after DOM is ready) ──────────────────────────

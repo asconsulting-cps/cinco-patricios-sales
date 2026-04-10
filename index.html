@@ -809,7 +809,7 @@ header {
     </tbody>
   </table>
 
-  <div class="section-head">Recent venue activity</div>
+  <div class="section-head">Recent sales activity</div>
   <table class="rep-table">
     <thead>
       <tr><th>Venue</th><th>Type</th><th>Rep</th><th>Wholesaler</th><th>Sales</th><th>Week</th></tr>
@@ -923,27 +923,64 @@ function doGet(e) {
     .getActiveSpreadsheet()
     .getSheetByName('Sheet1');
   var rows = sheet.getDataRange().getValues();
-  // Column H (index 7) is Sales. Row 0 is the header row.
+  // Columns: 0=Timestamp,1=WeekEnding,2=Rep,3=Venue,4=VenueType,5=Calls,6=Contacts,7=Sales,8=Wholesaler,9=Notes
   var baseline = 669; // Jan 200 + Feb 120 + Mar 349
   var totalSold = baseline;
-  // Track sales by month (April onwards — index 3+)
   var monthlySales = {};
+  // Find current week ending (most recent Friday)
+  var today = new Date();
+  var day = today.getDay();
+  var diffToFri = (day <= 5) ? (5 - day) : (5 - day + 7);
+  var thisFri = new Date(today);
+  thisFri.setDate(today.getDate() + diffToFri);
+  var thisWeekStr = thisFri.toISOString().split('T')[0];
+  // Per-rep totals for current week
+  var repWeek = {};
+  var repLastVenue = {};
+  var repSubmitted = {};
+  // Recent rows (last 20)
+  var recentRows = [];
+
   for (var i = 1; i < rows.length; i++) {
-    var val = parseInt(rows[i][7]);
-    if (!isNaN(val) && val > 0) {
-      totalSold += val;
-      // Col B (index 1) is weekEnding date
+    var sales = parseInt(rows[i][7]);
+    if (!isNaN(sales) && sales >= 0) {
+      totalSold += sales;
       var rowDate = new Date(rows[i][1]);
       if (!isNaN(rowDate.getTime())) {
-        var monthKey = rowDate.getFullYear() + '-' + rowDate.getMonth(); // e.g. "2026-3" = Apr
-        monthlySales[monthKey] = (monthlySales[monthKey] || 0) + val;
+        var monthKey = rowDate.getFullYear() + '-' + rowDate.getMonth();
+        monthlySales[monthKey] = (monthlySales[monthKey] || 0) + sales;
       }
+      var rowWeek = String(rows[i][1]).split('T')[0];
+      var rep = String(rows[i][2]);
+      if (rowWeek === thisWeekStr) {
+        if (!repWeek[rep]) repWeek[rep] = { calls:0, contacts:0, sales:0 };
+        repWeek[rep].calls    += parseInt(rows[i][5]) || 0;
+        repWeek[rep].contacts += parseInt(rows[i][6]) || 0;
+        repWeek[rep].sales    += sales;
+        repLastVenue[rep] = rows[i][3] + ' (' + rows[i][4] + ')';
+        repSubmitted[rep] = true;
+      }
+      recentRows.push({
+        week: rowWeek,
+        rep: rep,
+        venue: String(rows[i][3]),
+        venueType: String(rows[i][4]),
+        wholesaler: String(rows[i][8]),
+        sales: sales
+      });
     }
   }
+  // Return last 15 rows most-recent-first
+  recentRows = recentRows.reverse().slice(0, 15);
   var result = {
     status: 'ok',
     totalSold: totalSold,
-    monthlySales: monthlySales
+    monthlySales: monthlySales,
+    thisWeek: thisWeekStr,
+    repWeek: repWeek,
+    repLastVenue: repLastVenue,
+    repSubmitted: repSubmitted,
+    recentRows: recentRows
   };
   return ContentService
     .createTextOutput(JSON.stringify(result))
@@ -999,6 +1036,8 @@ function switchView(name, btn) {
   var view = document.getElementById('view-' + name);
   if (view) view.classList.add('active');
   if (btn) btn.classList.add('active');
+  // Refresh live data whenever dashboard is opened
+  if (name === 'dashboard' && scriptUrl) fetchLiveTotal();
 }
 
 function addVenueRow() {
@@ -1278,30 +1317,106 @@ async function fetchLiveTotal() {
   try {
     var res = await fetch(scriptUrl, { mode: 'cors' });
     var data = await res.json();
-    if (data && typeof data.totalSold === 'number') {
+    if (!data || data.status !== 'ok') return;
+
+    // ── Annual target ────────────────────────────────
+    if (typeof data.totalSold === 'number') {
       totalSold = data.totalSold;
       try { localStorage.setItem('cp_total_sold', totalSold); } catch(e) {}
       renderTarget(totalSold);
-      // Update monthly split cells dynamically
-      if (data.monthlySales) {
-        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        var now = new Date();
-        var year = now.getFullYear();
-        // Update Apr through Dec cells if they exist
-        for (var m = 3; m <= 11; m++) {
-          var key = year + '-' + m;
-          var val = data.monthlySales[key] || 0;
-          var cellId = 'split-month-' + m;
-          var valId = 'split-month-val-' + m;
-          var el = document.getElementById(valId);
-          if (el) el.textContent = val;
-          // Also update the label
-          var lblEl = document.getElementById('split-month-lbl-' + m);
-          if (lblEl) lblEl.textContent = months[m];
+    }
+
+    // ── Monthly split cells ──────────────────────────
+    if (data.monthlySales) {
+      var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      var year = new Date().getFullYear();
+      for (var m = 3; m <= 11; m++) {
+        var key = year + '-' + m;
+        var val = data.monthlySales[key] || 0;
+        var cell = document.getElementById('split-month-' + m);
+        var valEl = document.getElementById('split-month-val-' + m);
+        if (valEl) valEl.textContent = val;
+        if (cell && val > 0) cell.style.display = 'block';
+      }
+    }
+
+    // ── Week pill ────────────────────────────────────
+    if (data.thisWeek) {
+      var d = new Date(data.thisWeek);
+      var wkLabel = d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+      var pill = document.getElementById('dash-week-label');
+      if (pill) pill.textContent = 'Week ending ' + wkLabel;
+    }
+
+    // ── Rep breakdown ────────────────────────────────
+    var reps = ['Adam','Grainne','Paul'];
+    var repKeys = ['adam','grainne','paul'];
+    // Map Gráinne -> grainne for IDs
+    var repMap = { 'Adam':'adam', 'Gráinne':'grainne', 'Paul':'paul' };
+    function set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+
+    for (var r = 0; r < reps.length; r++) {
+      var repName = reps[r];
+      // Try exact name or Gráinne variant
+      var repData = data.repWeek[repName] || data.repWeek['Gráinne'] && repName === 'Grainne' ? (data.repWeek['Gráinne'] || data.repWeek[repName]) : null;
+      // Better: find by checking all keys
+      var foundKey = null;
+      for (var k in data.repWeek) {
+        if (k.toLowerCase().replace(/[^a-z]/g,'') === repKeys[r]) { foundKey = k; break; }
+      }
+      var key = repKeys[r];
+      var statusEl = document.getElementById('status-' + key);
+      if (foundKey && data.repWeek[foundKey]) {
+        var rd = data.repWeek[foundKey];
+        set('d-' + key + '-calls', rd.calls);
+        set('d-' + key + '-contacts', rd.contacts);
+        set('d-' + key + '-sales', rd.sales);
+        set('d-' + key + '-venue', data.repLastVenue[foundKey] || '—');
+        if (statusEl) { statusEl.textContent = 'Submitted'; statusEl.className = 'badge badge-done'; }
+      } else {
+        set('d-' + key + '-calls', '—');
+        set('d-' + key + '-contacts', '—');
+        set('d-' + key + '-sales', '—');
+        set('d-' + key + '-venue', '—');
+        set('d-' + key + '-w', '—');
+        if (statusEl) { statusEl.textContent = 'Not submitted'; statusEl.className = 'badge badge-missing'; }
+      }
+    }
+
+    // ── KPI row totals ───────────────────────────────
+    var tc = 0, tco = 0, ts = 0;
+    for (var rk in data.repWeek) {
+      tc  += data.repWeek[rk].calls    || 0;
+      tco += data.repWeek[rk].contacts || 0;
+      ts  += data.repWeek[rk].sales    || 0;
+    }
+    set('dash-calls',    tc  || '—');
+    set('dash-contacts', tco || '—');
+    set('dash-sales',    ts  || '—');
+
+    // ── Recent sales activity table ──────────────────
+    if (data.recentRows && data.recentRows.length > 0) {
+      var tbody = document.getElementById('venue-tbody');
+      if (tbody) {
+        tbody.innerHTML = '';
+        for (var i = 0; i < data.recentRows.length; i++) {
+          var row = data.recentRows[i];
+          var d2 = new Date(row.week);
+          var wk = isNaN(d2) ? row.week : d2.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+          var tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + row.venue + '</td>' +
+            '<td>' + row.venueType + '</td>' +
+            '<td>' + row.rep + '</td>' +
+            '<td>' + row.wholesaler + '</td>' +
+            '<td>' + row.sales + '</td>' +
+            '<td>' + wk + '</td>';
+          tbody.appendChild(tr);
         }
       }
     }
-  } catch(e) { console.log('Could not fetch live total:', e.message); }
+
+  } catch(e) { console.log('fetchLiveTotal error:', e.message); }
 }
 
 // ── INIT (runs after DOM is ready) ──────────────────────────

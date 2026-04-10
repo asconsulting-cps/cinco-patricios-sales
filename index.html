@@ -11,20 +11,19 @@
 :root {
   --agave:    #1A3A2A;
   --agave2:   #254D38;
-  --agave3:   #30663F;
+  --agave3:   #5A8A68;
   --gold:     #C9973A;
   --gold2:    #E8B558;
   --gold-lt:  #F5E9D4;
   --cream:    #FAF6EE;
   --parchment:#F0E9D8;
-  --earth:    #8B6B45;
   --ink:      #1C1208;
-  --ink2:     #4A3B27;
-  --ink3:     #8A7860;
-  --smoke:    #D8D0C0;
+  --ink2:     #3D3020;
+  --ink3:     #6B5D4F;
+  --smoke:    #C8C0B0;
   --serif:    'Playfair Display', Georgia, serif;
   --mono:     'Courier Prime', 'Courier New', monospace;
-  --border-r: 6px;
+  --border-r: 8px;
 }
 
 body {
@@ -32,7 +31,8 @@ body {
   background: var(--cream);
   color: var(--ink);
   min-height: 100vh;
-  font-size: 13px;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 /* ── HEADER ─────────────────────────────────────── */
@@ -42,21 +42,16 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 60px;
+  height: 64px;
   position: sticky;
   top: 0;
   z-index: 100;
   border-bottom: 2px solid var(--gold);
 }
-
-.brand {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
+.brand { display: flex; align-items: baseline; gap: 10px; }
 .brand-name {
   font-family: var(--serif);
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
   color: var(--gold2);
   letter-spacing: 0.5px;
@@ -64,24 +59,22 @@ header {
 }
 .brand-tag {
   font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
-  color: var(--agave3);
-  padding-top: 2px;
-}
-
-.nav-tabs { display: flex; gap: 3px; }
-.nav-tab {
-  font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  padding: 7px 16px;
-  border-radius: 4px;
+  color: var(--agave3);
+}
+.nav-tabs { display: flex; gap: 4px; }
+.nav-tab {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border-radius: 6px;
   border: 1px solid transparent;
   cursor: pointer;
-  color: var(--smoke);
+  color: #B8CDB8;
   background: transparent;
   transition: all 0.15s;
 }
@@ -89,153 +82,129 @@ header {
 .nav-tab.active { background: var(--gold); color: var(--agave); border-color: var(--gold); font-weight: 700; }
 
 /* ── LAYOUT ─────────────────────────────────────── */
-.view { display: none; padding: 40px 32px; max-width: 820px; margin: 0 auto; }
+.view { display: none; padding: 44px 36px; max-width: 860px; margin: 0 auto; }
 .view.active { display: block; animation: fadeUp 0.25s ease; }
-
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── PAGE HEADER ────────────────────────────────── */
-.page-header { margin-bottom: 36px; }
+.page-header { margin-bottom: 40px; }
 .week-pill {
   display: inline-block;
   background: var(--agave);
   color: var(--gold2);
-  font-size: 9px;
-  letter-spacing: 2px;
+  font-size: 11px;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 20px;
   margin-bottom: 14px;
 }
 .page-header h1 {
   font-family: var(--serif);
-  font-size: 36px;
+  font-size: 40px;
   font-weight: 400;
   color: var(--agave);
   letter-spacing: -0.5px;
   line-height: 1.15;
 }
 .page-header h1 em { font-style: italic; color: var(--gold); }
-.page-header p { color: var(--ink3); font-size: 12px; margin-top: 8px; }
+.page-header p { color: var(--ink3); font-size: 15px; margin-top: 8px; }
 
 /* ── SETUP PANEL ────────────────────────────────── */
 .setup-panel {
   background: var(--agave);
   border-radius: 12px;
-  padding: 22px 26px;
+  padding: 24px 28px;
   margin-bottom: 28px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  border: 1px solid var(--agave2);
+  gap: 20px;
 }
-.setup-panel label { display: block; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--agave3); margin-bottom: 6px; }
+.setup-panel label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--agave3);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
 .setup-select {
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   background: var(--agave2);
-  border: 1px solid var(--agave3);
+  border: 1px solid #3A6B4A;
   border-radius: var(--border-r);
-  padding: 10px 14px;
+  padding: 11px 16px;
   color: var(--gold2);
   outline: none;
   width: 100%;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23C9973A'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23E8B558'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 32px;
+  background-position: right 14px center;
+  padding-right: 36px;
 }
 .setup-select option { background: var(--agave2); }
 
 /* ── CARD ───────────────────────────────────────── */
 .card {
   background: white;
-  border: 1px solid var(--smoke);
+  border: 1.5px solid var(--smoke);
   border-radius: 12px;
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   transition: box-shadow 0.2s;
 }
-.card:focus-within { box-shadow: 0 0 0 3px rgba(201,151,58,0.25); }
-
+.card:focus-within { box-shadow: 0 0 0 3px rgba(201,151,58,0.2); border-color: var(--gold); }
 .card-head {
-  padding: 14px 22px;
-  border-bottom: 1px solid var(--parchment);
+  padding: 16px 24px;
+  border-bottom: 1.5px solid var(--parchment);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   background: var(--cream);
 }
 .q-badge {
-  width: 26px; height: 26px;
+  width: 30px; height: 30px;
   background: var(--agave);
   color: var(--gold2);
   font-family: var(--serif);
-  font-size: 13px;
+  font-size: 15px;
   font-style: italic;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.q-title { font-size: 13px; font-weight: 700; color: var(--ink); }
-.q-hint { font-size: 11px; color: var(--ink3); margin-top: 2px; }
-.card-body { padding: 20px 22px; }
-
-/* ── VENUE FIELDS ───────────────────────────────── */
-.venue-grid { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
-.venue-input {
-  font-family: var(--mono);
-  font-size: 14px;
-  color: var(--ink);
-  background: var(--cream);
-  border: 1px solid var(--smoke);
-  border-radius: var(--border-r);
-  padding: 11px 14px;
-  width: 100%;
-  outline: none;
-  transition: border-color 0.15s;
-}
-.venue-input:focus { border-color: var(--gold); }
-.venue-input::placeholder { color: var(--smoke); }
-
-.type-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.type-btn {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.5px;
-  padding: 9px 18px;
-  border-radius: 20px;
-  border: 1px solid var(--smoke);
-  background: var(--cream);
-  color: var(--ink3);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.type-btn:hover { border-color: var(--gold); color: var(--gold); }
-.type-btn.selected { background: var(--gold); border-color: var(--gold); color: var(--agave); font-weight: 700; }
+.q-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+.q-hint { font-size: 13px; color: var(--ink3); margin-top: 3px; }
+.card-body { padding: 24px 24px; }
 
 /* ── METRIC ROW ─────────────────────────────────── */
-.metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.metric-wrap { display: flex; flex-direction: column; gap: 6px; }
+.metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.metric-wrap { display: flex; flex-direction: column; gap: 8px; }
 .metric-label {
-  font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  font-weight: 700;
 }
 .metric-input {
   font-family: var(--serif);
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 600;
   color: var(--agave);
   background: var(--cream);
-  border: 1px solid var(--smoke);
+  border: 1.5px solid var(--smoke);
   border-radius: var(--border-r);
-  padding: 12px 16px;
+  padding: 14px 16px;
   width: 100%;
   outline: none;
   text-align: center;
@@ -246,71 +215,127 @@ header {
 .metric-input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .metric-input:focus { border-color: var(--gold); }
 
-/* ── WHOLESALER ─────────────────────────────────── */
-.wholesaler-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-.w-btn {
-  font-family: var(--mono);
-  font-size: 12px;
-  padding: 11px 14px;
-  border-radius: var(--border-r);
-  border: 1px solid var(--smoke);
-  background: var(--cream);
-  color: var(--ink2);
-  cursor: pointer;
+/* ── VENUE TABLE ─────────────────────────────────── */
+.venue-table-wrap { margin-bottom: 12px; overflow-x: auto; }
+.venue-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.venue-table th {
   text-align: left;
-  transition: all 0.15s;
-  display: flex; align-items: center; gap: 8px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  font-weight: 700;
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--smoke);
 }
-.w-btn::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--smoke); flex-shrink: 0; transition: background 0.15s; }
-.w-btn:hover { border-color: var(--gold); }
-.w-btn.selected { background: var(--gold-lt); border-color: var(--gold); color: var(--ink); font-weight: 700; }
-.w-btn.selected::before { background: var(--gold); }
-
-.wholesaler-other {
-  margin-top: 10px;
+.venue-table td { padding: 10px 10px; border-bottom: 1px solid var(--parchment); vertical-align: middle; }
+.venue-table tr:last-child td { border-bottom: none; }
+.venue-table tr:hover td { background: #FDFAF5; }
+.venue-row-input {
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--ink);
   background: var(--cream);
-  border: 1px solid var(--smoke);
-  border-radius: var(--border-r);
-  padding: 10px 14px;
+  border: 1.5px solid var(--smoke);
+  border-radius: 6px;
+  padding: 8px 10px;
   width: 100%;
   outline: none;
-  display: none;
+  transition: border-color 0.15s;
 }
-.wholesaler-other:focus { border-color: var(--gold); }
-.wholesaler-other.visible { display: block; }
+.venue-row-input:focus { border-color: var(--gold); }
+.venue-row-input::placeholder { color: #B8B0A0; }
+.venue-row-input.num {
+  width: 70px;
+  text-align: center;
+  -moz-appearance: textfield;
+  font-size: 16px;
+  font-family: var(--serif);
+  font-weight: 600;
+}
+.venue-row-input.num::-webkit-outer-spin-button,
+.venue-row-input.num::-webkit-inner-spin-button { -webkit-appearance: none; }
+.venue-row-select {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--cream);
+  border: 1.5px solid var(--smoke);
+  border-radius: 6px;
+  padding: 8px 10px;
+  outline: none;
+  width: 100%;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%236B5D4F'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 26px;
+}
+.venue-row-select:focus { border-color: var(--gold); }
+.remove-row-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--smoke); font-size: 20px; line-height: 1;
+  padding: 4px 6px; transition: color 0.15s; border-radius: 4px;
+}
+.remove-row-btn:hover { color: #C84040; background: #FDE8E8; }
+.add-venue-btn {
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: var(--agave);
+  background: var(--gold-lt);
+  border: 1.5px dashed var(--gold);
+  border-radius: var(--border-r);
+  padding: 12px 20px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+  transition: all 0.15s;
+}
+.add-venue-btn:hover { background: var(--gold); color: white; border-style: solid; }
+.venue-totals {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 16px 20px;
+  background: var(--agave);
+  border-radius: var(--border-r);
+}
+.venue-total-item { text-align: center; flex: 1; }
+.venue-total-val { font-family: var(--serif); font-size: 26px; font-weight: 600; color: var(--gold2); }
+.venue-total-lbl { font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: var(--agave3); margin-top: 4px; }
 
 /* ── NOTES ──────────────────────────────────────── */
 .note-area {
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.7;
   color: var(--ink);
   background: var(--cream);
-  border: 1px solid var(--smoke);
+  border: 1.5px solid var(--smoke);
   border-radius: var(--border-r);
   padding: 14px 16px;
   width: 100%;
   resize: vertical;
-  min-height: 80px;
+  min-height: 90px;
   outline: none;
   transition: border-color 0.15s;
 }
 .note-area:focus { border-color: var(--gold); }
-.note-area::placeholder { color: var(--smoke); }
+.note-area::placeholder { color: #B8B0A0; }
 
 /* ── SUBMIT ─────────────────────────────────────── */
-.submit-row { margin-top: 28px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.submit-row { margin-top: 32px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .submit-btn {
   background: var(--agave);
   color: var(--gold2);
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 2px;
+  font-size: 13px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  padding: 14px 36px;
+  padding: 16px 40px;
   border: 2px solid var(--agave);
   border-radius: var(--border-r);
   cursor: pointer;
@@ -320,21 +345,20 @@ header {
 .submit-btn:hover { background: var(--gold); border-color: var(--gold); color: var(--agave); }
 .submit-btn:active { transform: scale(0.98); }
 .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-.submit-status { font-size: 12px; color: var(--ink3); }
+.submit-status { font-size: 14px; color: var(--ink3); }
 
-/* ── BANNER ─────────────────────────────────────── */
+/* ── BANNERS ─────────────────────────────────────── */
 .success-banner {
   display: none;
   background: var(--agave);
   border: 1px solid var(--agave3);
   border-radius: 10px;
-  padding: 20px 26px;
+  padding: 22px 28px;
   margin-top: 24px;
   color: var(--gold2);
 }
-.success-banner strong { font-family: var(--serif); font-size: 16px; font-style: italic; }
-.success-banner p { color: var(--agave3); font-size: 12px; margin-top: 6px; }
-
+.success-banner strong { font-family: var(--serif); font-size: 18px; font-style: italic; }
+.success-banner p { color: #7AAA88; font-size: 14px; margin-top: 6px; }
 .error-banner {
   display: none;
   background: #FDE8E8;
@@ -342,28 +366,28 @@ header {
   border-radius: 10px;
   padding: 16px 22px;
   margin-top: 16px;
-  color: #8B2020;
-  font-size: 12px;
+  color: #7A1A1A;
+  font-size: 14px;
 }
 
-/* ── SETUP NOTICE ───────────────────────────────── */
+/* ── SETUP NOTICES ───────────────────────────────── */
 .setup-notice {
   background: var(--gold-lt);
-  border: 1px solid var(--gold);
+  border: 1.5px solid var(--gold);
   border-radius: 10px;
-  padding: 20px 24px;
+  padding: 22px 26px;
   margin-bottom: 28px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink2);
   line-height: 1.8;
 }
-.setup-notice strong { color: var(--agave); font-weight: 700; }
+.setup-notice strong { color: var(--agave); font-weight: 700; font-size: 15px; }
 .setup-notice code {
   background: var(--parchment);
   border: 1px solid var(--smoke);
   border-radius: 4px;
-  padding: 1px 6px;
-  font-size: 11px;
+  padding: 2px 8px;
+  font-size: 13px;
   color: var(--agave);
   display: block;
   margin: 8px 0;
@@ -371,10 +395,10 @@ header {
 }
 .script-block {
   background: var(--agave);
-  color: var(--gold2);
+  color: #A8D8B0;
   border-radius: 8px;
-  padding: 16px 18px;
-  font-size: 11px;
+  padding: 18px 20px;
+  font-size: 13px;
   line-height: 1.7;
   margin: 12px 0;
   overflow-x: auto;
@@ -382,23 +406,30 @@ header {
 }
 
 /* ── DASHBOARD ───────────────────────────────────── */
-.kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+.kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
 .kpi-card {
   background: white;
-  border: 1px solid var(--smoke);
+  border: 1.5px solid var(--smoke);
   border-radius: 10px;
-  padding: 18px 20px;
+  padding: 20px 22px;
 }
-.kpi-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--ink3); margin-bottom: 6px; }
-.kpi-val { font-family: var(--serif); font-size: 36px; font-weight: 600; color: var(--agave); line-height: 1; }
-.kpi-delta { font-size: 11px; margin-top: 6px; color: var(--ink3); }
+.kpi-label {
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.kpi-val { font-family: var(--serif); font-size: 40px; font-weight: 600; color: var(--agave); line-height: 1; }
+.kpi-delta { font-size: 13px; margin-top: 8px; color: var(--ink3); }
 .kpi-delta.up { color: var(--agave3); }
 
 /* ── ANNUAL TARGET TRACKER ──────────────────────── */
 .target-card {
   background: var(--agave);
   border-radius: 12px;
-  padding: 24px 28px;
+  padding: 26px 30px;
   margin-bottom: 28px;
   color: var(--cream);
 }
@@ -406,82 +437,110 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
   gap: 12px;
 }
-.target-heading { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--agave3); margin-bottom: 6px; }
-.target-main { font-family: var(--serif); font-size: 42px; font-weight: 600; color: var(--gold2); line-height: 1; }
-.target-sub { font-size: 11px; color: var(--agave3); margin-top: 5px; }
+.target-heading {
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--agave3);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.target-main { font-family: var(--serif); font-size: 48px; font-weight: 600; color: var(--gold2); line-height: 1; }
+.target-sub { font-size: 14px; color: #7AAA88; margin-top: 6px; }
 .target-stats { text-align: right; }
-.target-stats-val { font-family: var(--serif); font-size: 22px; font-weight: 600; color: var(--cream); }
-.target-stats-lbl { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--agave3); margin-top: 3px; }
-.target-bar-wrap { background: var(--agave2); border-radius: 4px; height: 8px; width: 100%; overflow: hidden; margin-bottom: 10px; }
-.target-bar-fill { height: 100%; border-radius: 4px; background: var(--gold); transition: width 0.6s ease; }
-.target-bar-fill.danger { background: #C84040; }
-.target-meta { display: flex; justify-content: space-between; font-size: 10px; color: var(--agave3); }
-.target-split { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--agave2); border-radius: 8px; overflow: hidden; margin-top: 18px; }
-.target-split-cell { background: var(--agave); padding: 12px 14px; }
-.target-split-cell .lbl { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--agave3); margin-bottom: 4px; }
-.target-split-cell .val { font-family: var(--serif); font-size: 18px; font-weight: 600; color: var(--gold2); }
+.target-stats-val { font-family: var(--serif); font-size: 28px; font-weight: 600; color: var(--cream); }
+.target-stats-lbl { font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: var(--agave3); margin-top: 4px; font-weight: 700; }
+.target-bar-wrap { background: rgba(0,0,0,0.25); border-radius: 6px; height: 10px; width: 100%; overflow: hidden; margin-bottom: 10px; }
+.target-bar-fill { height: 100%; border-radius: 6px; background: var(--gold); transition: width 0.6s ease; }
+.target-bar-fill.danger { background: #E05050; }
+.target-meta { display: flex; justify-content: space-between; font-size: 13px; color: #7AAA88; }
+.target-split { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: rgba(0,0,0,0.2); border-radius: 8px; overflow: hidden; margin-top: 20px; }
+.target-split-cell { background: var(--agave2); padding: 14px 16px; }
+.target-split-cell .lbl { font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: var(--agave3); margin-bottom: 6px; font-weight: 700; }
+.target-split-cell .val { font-family: var(--serif); font-size: 22px; font-weight: 600; color: var(--gold2); }
 
 .section-head {
-  font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ink3);
-  padding-bottom: 10px; border-bottom: 1px solid var(--smoke); margin-bottom: 16px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  font-weight: 700;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--smoke);
+  margin-bottom: 16px;
 }
-
 .rep-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
-.rep-table th { text-align: left; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink3); padding: 8px 12px; border-bottom: 1px solid var(--smoke); font-weight: 400; }
-.rep-table td { padding: 13px 12px; border-bottom: 1px solid var(--parchment); font-size: 12px; vertical-align: middle; }
+.rep-table th {
+  text-align: left;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--ink3);
+  font-weight: 700;
+  padding: 10px 14px;
+  border-bottom: 2px solid var(--smoke);
+}
+.rep-table td { padding: 14px 14px; border-bottom: 1px solid var(--parchment); font-size: 14px; vertical-align: middle; }
 .rep-table tr:last-child td { border-bottom: none; }
 .rep-table tr:hover td { background: var(--cream); }
-.rep-name { font-family: var(--serif); font-weight: 600; font-size: 14px; color: var(--agave); }
+.rep-name { font-family: var(--serif); font-weight: 600; font-size: 16px; color: var(--agave); }
 
-.badge { display: inline-block; font-size: 10px; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.3px; }
-.badge-done { background: #E6F2EB; color: #1A5C32; }
-.badge-missing { background: #FDE8E8; color: #8B2020; }
+.badge { display: inline-block; font-size: 12px; padding: 4px 12px; border-radius: 20px; font-weight: 700; }
+.badge-done { background: #D4EDDA; color: #1A5C32; }
+.badge-missing { background: #FDE8E8; color: #7A1A1A; }
 
 /* ── EMAIL ───────────────────────────────────────── */
 .email-shell {
   background: white;
-  border: 1px solid var(--smoke);
+  border: 1.5px solid var(--smoke);
   border-radius: 12px;
   overflow: hidden;
   max-width: 580px;
   margin: 0 auto;
-  font-family: Georgia, serif;
 }
 .email-top {
   background: var(--agave);
-  padding: 30px 36px;
+  padding: 32px 38px;
   border-bottom: 3px solid var(--gold);
 }
-.email-top h2 { font-family: var(--serif); font-size: 28px; font-weight: 400; color: var(--gold2); letter-spacing: -0.5px; }
+.email-top h2 { font-family: var(--serif); font-size: 30px; font-weight: 400; color: var(--gold2); letter-spacing: -0.5px; }
 .email-top h2 em { font-style: italic; }
-.email-top p { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--agave3); margin-top: 6px; }
-.email-body { padding: 28px 36px; }
-.email-sec { margin-bottom: 22px; }
-.email-sec-title { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--ink3); padding-bottom: 8px; border-bottom: 1px solid var(--parchment); margin-bottom: 12px; }
+.email-top p { font-family: var(--mono); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--agave3); margin-top: 8px; }
+.email-body { padding: 30px 38px; font-family: var(--mono); }
+.email-sec { margin-bottom: 24px; }
+.email-sec-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ink3);
+  font-weight: 700;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--parchment);
+  margin-bottom: 14px;
+}
 .email-kpis { display: flex; gap: 10px; }
-.email-kpi { flex: 1; text-align: center; padding: 14px; background: var(--cream); border-radius: 8px; }
-.email-kpi .n { font-family: var(--mono); font-size: 24px; font-weight: 700; color: var(--agave); }
-.email-kpi .l { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--ink3); margin-top: 3px; }
-.email-rep { display: flex; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--parchment); gap: 8px; font-family: var(--mono); font-size: 12px; }
+.email-kpi { flex: 1; text-align: center; padding: 16px; background: var(--cream); border-radius: 8px; }
+.email-kpi .n { font-family: var(--serif); font-size: 28px; font-weight: 600; color: var(--agave); }
+.email-kpi .l { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink3); font-weight: 700; margin-top: 4px; }
+.email-rep { display: flex; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--parchment); gap: 10px; font-size: 14px; }
 .email-rep:last-child { border: none; }
-.email-rep-name { font-weight: 700; flex: 1; color: var(--agave); }
-.email-hi { background: var(--gold-lt); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; padding: 12px 16px; font-family: var(--mono); font-size: 12px; color: var(--ink2); }
-.email-foot { background: var(--parchment); padding: 14px 36px; font-family: var(--mono); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink3); text-align: center; }
+.email-rep-name { font-weight: 700; flex: 1; color: var(--agave); font-size: 15px; }
+.email-hi { background: var(--gold-lt); border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; padding: 14px 18px; font-size: 14px; color: var(--ink2); line-height: 1.7; }
+.email-foot { background: var(--parchment); padding: 16px 38px; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: var(--ink3); text-align: center; font-weight: 700; }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   header { padding: 0 16px; }
   .brand-tag { display: none; }
   .view { padding: 24px 16px; }
   .setup-panel { grid-template-columns: 1fr; }
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
-  .metric-row { grid-template-columns: repeat(3, 1fr); }
-  .wholesaler-grid { grid-template-columns: 1fr; }
-  .venue-grid { grid-template-columns: 1fr; }
+  .metric-row { grid-template-columns: 1fr 1fr; }
   .email-kpis { flex-wrap: wrap; }
+  .nav-tab { font-size: 11px; padding: 7px 12px; }
 }
 </style>
 </head>
@@ -524,44 +583,17 @@ header {
     </div>
   </div>
 
-  <!-- Q1 VENUE -->
+  <!-- Q1 OUTREACH -->
   <div class="card">
     <div class="card-head">
       <div class="q-badge">1</div>
       <div>
-        <div class="q-title">Venue details</div>
-        <div class="q-hint">Name of the account you visited or contacted this week</div>
+        <div class="q-title">Outreach this week</div>
+        <div class="q-hint">Total calls made and contacts reached across all venues</div>
       </div>
     </div>
     <div class="card-body">
-      <div class="venue-grid">
-        <div>
-          <div class="metric-label" style="margin-bottom:6px;">Venue name</div>
-          <input class="venue-input" type="text" id="venue-name" placeholder="e.g. The Shelbourne, Fade Street Social…">
-        </div>
-        <div>
-          <div class="metric-label" style="margin-bottom:6px;">Venue type</div>
-          <div class="type-row" id="type-row">
-            <button class="type-btn" onclick="selectType(this,'Bar')">Bar</button>
-            <button class="type-btn" onclick="selectType(this,'Hotel')">Hotel</button>
-            <button class="type-btn" onclick="selectType(this,'Restaurant')">Restaurant</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Q2 METRICS -->
-  <div class="card">
-    <div class="card-head">
-      <div class="q-badge">2</div>
-      <div>
-        <div class="q-title">Activity this week</div>
-        <div class="q-hint">Your total outreach numbers — calls made, contacts reached, bottles sold</div>
-      </div>
-    </div>
-    <div class="card-body">
-      <div class="metric-row">
+      <div class="metric-row" style="grid-template-columns:1fr 1fr;">
         <div class="metric-wrap">
           <div class="metric-label">Calls</div>
           <input class="metric-input" type="number" id="calls" placeholder="0" min="0">
@@ -570,43 +602,56 @@ header {
           <div class="metric-label">Contacts</div>
           <input class="metric-input" type="number" id="contacts" placeholder="0" min="0">
         </div>
-        <div class="metric-wrap">
-          <div class="metric-label">Sales</div>
-          <input class="metric-input" type="number" id="sales" placeholder="0" min="0">
+      </div>
+    </div>
+  </div>
+
+  <!-- Q2 VENUES -->
+  <div class="card">
+    <div class="card-head">
+      <div class="q-badge">2</div>
+      <div>
+        <div class="q-title">Venue sales this week</div>
+        <div class="q-hint">Add a row for each venue where you made or progressed a sale</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="venue-table-wrap">
+        <table class="venue-table">
+          <thead>
+            <tr>
+              <th style="width:28%">Venue name</th>
+              <th style="width:15%">Type</th>
+              <th style="width:26%">Wholesaler</th>
+              <th style="width:12%">Bottles</th>
+              <th style="width:12%">Calls</th>
+              <th style="width:7%"></th>
+            </tr>
+          </thead>
+          <tbody id="venue-rows"></tbody>
+        </table>
+      </div>
+      <button class="add-venue-btn" onclick="addVenueRow()">+ Add another venue</button>
+      <div class="venue-totals">
+        <div class="venue-total-item">
+          <div class="venue-total-val" id="total-bottles">0</div>
+          <div class="venue-total-lbl">Total bottles</div>
+        </div>
+        <div class="venue-total-item">
+          <div class="venue-total-val" id="total-venues">0</div>
+          <div class="venue-total-lbl">Accounts</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Q3 WHOLESALER -->
+  <!-- Q3 NOTES -->
   <div class="card">
     <div class="card-head">
       <div class="q-badge">3</div>
       <div>
-        <div class="q-title">Route to market</div>
-        <div class="q-hint">How is this account buying Cinco Patricio's?</div>
-      </div>
-    </div>
-    <div class="card-body">
-      <div class="wholesaler-grid" id="wholesaler-grid">
-        <button class="w-btn" onclick="selectWholesaler(this,'Direct sale')">Direct sale</button>
-        <button class="w-btn" onclick="selectWholesaler(this,'BWG')">BWG</button>
-        <button class="w-btn" onclick="selectWholesaler(this,'Classic Drinks')">Classic Drinks</button>
-        <button class="w-btn" onclick="selectWholesaler(this,'Barry\'s')">Barry's</button>
-        <button class="w-btn" onclick="selectWholesaler(this,'J&C Kenny')">J&amp;C Kenny</button>
-        <button class="w-btn" onclick="selectWholesaler(this,'Other')">Other wholesaler…</button>
-      </div>
-      <input class="wholesaler-other" type="text" id="wholesaler-other" placeholder="Enter wholesaler name">
-    </div>
-  </div>
-
-  <!-- Q4 NOTES -->
-  <div class="card">
-    <div class="card-head">
-      <div class="q-badge">4</div>
-      <div>
         <div class="q-title">Notes &amp; highlights</div>
-        <div class="q-hint">Anything worth flagging — a win, a follow-up needed, feedback from the venue</div>
+        <div class="q-hint">Anything worth flagging — a win, a follow-up needed, feedback from a venue</div>
       </div>
     </div>
     <div class="card-body">
@@ -902,12 +947,13 @@ function doGet(e) {
 <script>
 // ── STATE ──────────────────────────────────────────────────
 const STATE = {
-  venueType: '',
-  wholesaler: '',
   scriptUrl: localStorage.getItem('cp_script_url') || '',
   totalSold: parseInt(localStorage.getItem('cp_total_sold') || '669'),
   TARGET: 5500
 };
+
+const WHOLESALERS = ['Direct sale','BWG','Classic Drinks',"Barry's",'J&C Kenny','Other'];
+const VENUE_TYPES = ['Bar','Hotel','Restaurant'];
 
 // ── INIT ───────────────────────────────────────────────────
 (function init() {
@@ -919,6 +965,7 @@ const STATE = {
   // Render with local fallback first, then fetch live from Sheets
   renderTarget(STATE.totalSold);
   if (STATE.scriptUrl) fetchLiveTotal();
+  addVenueRow();
 })();
 
 async function fetchLiveTotal() {
@@ -1003,57 +1050,116 @@ function switchView(name, btn) {
   btn.classList.add('active');
 }
 
-// ── SELECTORS ─────────────────────────────────────────────
-function selectType(btn, val) {
-  document.querySelectorAll('#type-row .type-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  STATE.venueType = val;
+// ── VENUE ROWS ────────────────────────────────────────────
+let venueRowId = 0;
+
+function addVenueRow() {
+  venueRowId++;
+  const id = venueRowId;
+  const tbody = document.getElementById('venue-rows');
+  const tr = document.createElement('tr');
+  tr.id = 'vrow-' + id;
+  tr.innerHTML = `
+    <td><input class="venue-row-input" type="text" placeholder="Venue name" oninput="recalcTotals()"></td>
+    <td>
+      <select class="venue-row-select">
+        <option value="">Type</option>
+        ${VENUE_TYPES.map(t => `<option value="${t}">${t}</option>`).join('')}
+      </select>
+    </td>
+    <td>
+      <select class="venue-row-select" onchange="handleWholesalerChange(this,${id})">
+        <option value="">Wholesaler</option>
+        ${WHOLESALERS.map(w => `<option value="${w}">${w}</option>`).join('')}
+      </select>
+      <input class="venue-row-input" type="text" id="w-other-${id}" placeholder="Enter name"
+        style="display:none;margin-top:4px;" oninput="recalcTotals()">
+    </td>
+    <td><input class="venue-row-input num" type="number" placeholder="0" min="0" oninput="recalcTotals()"></td>
+    <td><input class="venue-row-input num" type="number" placeholder="0" min="0"></td>
+    <td><button class="remove-row-btn" onclick="removeVenueRow(${id})" title="Remove">×</button></td>
+  `;
+  tbody.appendChild(tr);
+  recalcTotals();
 }
 
-function selectWholesaler(btn, val) {
-  document.querySelectorAll('#wholesaler-grid .w-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  STATE.wholesaler = val;
-  const other = document.getElementById('wholesaler-other');
-  if (val === 'Other') {
-    other.classList.add('visible');
-    other.focus();
-  } else {
-    other.classList.remove('visible');
-    other.value = '';
-  }
+function removeVenueRow(id) {
+  const row = document.getElementById('vrow-' + id);
+  if (row) row.remove();
+  recalcTotals();
+}
+
+function handleWholesalerChange(sel, id) {
+  const other = document.getElementById('w-other-' + id);
+  if (other) other.style.display = sel.value === 'Other' ? 'block' : 'none';
+  recalcTotals();
+}
+
+function recalcTotals() {
+  const rows = document.querySelectorAll('#venue-rows tr');
+  let bottles = 0;
+  rows.forEach(tr => {
+    const inputs = tr.querySelectorAll('input.num');
+    if (inputs[0]) bottles += parseInt(inputs[0].value) || 0;
+  });
+  const totalEl = document.getElementById('total-bottles');
+  const venueEl = document.getElementById('total-venues');
+  if (totalEl) totalEl.textContent = bottles;
+  if (venueEl) venueEl.textContent = rows.length;
+}
+
+function getVenueRows() {
+  const rows = document.querySelectorAll('#venue-rows tr');
+  const result = [];
+  rows.forEach((tr, i) => {
+    const inputs = tr.querySelectorAll('input');
+    const selects = tr.querySelectorAll('select');
+    const venueName = inputs[0] ? inputs[0].value.trim() : '';
+    const venueType = selects[0] ? selects[0].value : '';
+    let wholesaler = selects[1] ? selects[1].value : '';
+    if (wholesaler === 'Other') {
+      const otherId = tr.id.replace('vrow-','');
+      const otherEl = document.getElementById('w-other-' + otherId);
+      wholesaler = otherEl ? otherEl.value.trim() : 'Other';
+    }
+    const bottles = inputs[1] ? (parseInt(inputs[1].value) || 0) : 0;
+    const calls = inputs[2] ? (parseInt(inputs[2].value) || 0) : 0;
+    if (venueName) result.push({ venueName, venueType, wholesaler, bottles, calls });
+  });
+  return result;
 }
 
 // ── SUBMIT ─────────────────────────────────────────────────
 async function submitCheckin() {
   const rep = document.getElementById('rep-select').value;
   const weekEnding = document.getElementById('week-select').value;
-  const venue = document.getElementById('venue-name').value.trim();
-  const calls = document.getElementById('calls').value || '0';
-  const contacts = document.getElementById('contacts').value || '0';
-  const sales = document.getElementById('sales').value || '0';
+  const calls = parseInt(document.getElementById('calls').value) || 0;
+  const contacts = parseInt(document.getElementById('contacts').value) || 0;
   const notes = document.getElementById('notes').value.trim();
-  const wholesalerOther = document.getElementById('wholesaler-other').value.trim();
-  const wholesaler = STATE.wholesaler === 'Other' ? wholesalerOther : STATE.wholesaler;
+  const venueRows = getVenueRows();
+  const totalSales = venueRows.reduce((sum, r) => sum + r.bottles, 0);
 
   // Validation
   if (!rep) return showError('Please select your name.');
-  if (!venue) return showError('Please enter a venue name.');
-  if (!STATE.venueType) return showError('Please select a venue type (Bar, Hotel, or Restaurant).');
-  if (!wholesaler) return showError('Please select a route to market.');
+  if (venueRows.length === 0) return showError('Please add at least one venue.');
 
-  const payload = {
+  // Build one payload per venue row — each writes its own sheet row
+  const payloads = venueRows.map(row => ({
     weekEnding,
     rep,
-    venue,
-    venueType: STATE.venueType,
-    calls: parseInt(calls),
-    contacts: parseInt(contacts),
-    sales: parseInt(sales),
-    wholesaler,
+    venue: row.venueName,
+    venueType: row.venueType,
+    calls: row.calls || calls,
+    contacts: contacts,
+    sales: row.bottles,
+    wholesaler: row.wholesaler,
     notes,
-    submittedAt: new Date().toISOString()
-  };
+    submittedAt: new Date().toISOString(),
+    totalWeeklySales: totalSales
+  }));
+
+  // Use first payload for dashboard/email update (pass total sales)
+  const payload = { ...payloads[0], sales: totalSales, calls, contacts };
 
   const btn = document.getElementById('submit-btn');
   const status = document.getElementById('submit-status');
@@ -1062,22 +1168,24 @@ async function submitCheckin() {
   hideError();
 
   if (!STATE.scriptUrl) {
-    // No endpoint — demo mode
     await new Promise(r => setTimeout(r, 800));
     showSuccess(payload);
     btn.disabled = true;
     status.textContent = '';
-    console.log('Payload (no endpoint configured):', payload);
+    console.log('Demo mode — payloads:', payloads);
     return;
   }
 
   try {
-    await fetch(STATE.scriptUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    // Send each venue row as a separate sheet row
+    await Promise.all(payloads.map(p =>
+      fetch(STATE.scriptUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(p)
+      })
+    ));
     showSuccess(payload);
     status.textContent = '';
   } catch (err) {

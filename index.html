@@ -620,12 +620,11 @@ header {
         <table class="venue-table">
           <thead>
             <tr>
-              <th style="width:28%">Venue name</th>
-              <th style="width:15%">Type</th>
-              <th style="width:26%">Wholesaler</th>
-              <th style="width:12%">Bottles</th>
-              <th style="width:12%">Calls</th>
-              <th style="width:7%"></th>
+              <th style="width:32%">Venue name</th>
+              <th style="width:16%">Type</th>
+              <th style="width:30%">Wholesaler</th>
+              <th style="width:14%">Bottles</th>
+              <th style="width:8%"></th>
             </tr>
           </thead>
           <tbody id="venue-rows"></tbody>
@@ -945,45 +944,316 @@ function doGet(e) {
 </div>
 
 <script>
-// Wait for full DOM before doing anything
-document.addEventListener('DOMContentLoaded', function() {
+// ── CONSTANTS ──────────────────────────────────────────────
+var WHOLESALERS = ['Direct sale','BWG','Classic Drinks',"Barry's",'J&C Kenny','Other'];
+var VENUE_TYPES = ['Bar','Hotel','Restaurant'];
+var TARGET = 5500;
+var venueRowId = 0;
+var totalSold = 669;
+var scriptUrl = '';
 
-  // ── CONSTANTS ────────────────────────────────────────────
-  var WHOLESALERS = ['Direct sale','BWG','Classic Drinks',"Barry's",'J&C Kenny','Other'];
-  var VENUE_TYPES = ['Bar','Hotel','Restaurant'];
-  var TARGET = 5500;
-  var venueRowId = 0;
+// ── TOP-LEVEL FUNCTIONS (callable from onclick) ─────────────
 
-  var scriptUrl = '';
-  try { scriptUrl = localStorage.getItem('cp_script_url') || ''; } catch(e) {}
+function switchView(name, btn) {
+  var views = document.querySelectorAll('.view');
+  var tabs = document.querySelectorAll('.nav-tab');
+  for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+  var view = document.getElementById('view-' + name);
+  if (view) view.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
 
-  var totalSold = 669;
-  try { totalSold = parseInt(localStorage.getItem('cp_total_sold') || '669'); } catch(e) {}
+function addVenueRow() {
+  var tbody = document.getElementById('venue-rows');
+  if (!tbody) return;
+  venueRowId++;
+  var id = venueRowId;
 
-  // ── INIT ─────────────────────────────────────────────────
-  populateWeeks();
-  renderTarget(totalSold);
-  addVenueRow();
+  var typeOpts = '<option value="">Type</option>';
+  for (var i = 0; i < VENUE_TYPES.length; i++) {
+    typeOpts += '<option value="' + VENUE_TYPES[i] + '">' + VENUE_TYPES[i] + '</option>';
+  }
+  var wOpts = '<option value="">Wholesaler</option>';
+  for (var j = 0; j < WHOLESALERS.length; j++) {
+    wOpts += '<option value="' + WHOLESALERS[j] + '">' + WHOLESALERS[j] + '</option>';
+  }
 
-  var urlInput = document.getElementById('script-url-input');
-  if (urlInput && scriptUrl) urlInput.value = scriptUrl;
-  updateUrlDisplay();
+  var tr = document.createElement('tr');
+  tr.id = 'vrow-' + id;
+  tr.innerHTML =
+    '<td><input class="venue-row-input" type="text" placeholder="Venue name"></td>' +
+    '<td><select class="venue-row-select">' + typeOpts + '</select></td>' +
+    '<td>' +
+      '<select class="venue-row-select" id="ws-sel-' + id + '">' + wOpts + '</select>' +
+      '<input class="venue-row-input" type="text" id="w-other-' + id + '" placeholder="Enter wholesaler name" style="display:none;margin-top:6px;">' +
+    '</td>' +
+    '<td><input class="venue-row-input num" type="number" placeholder="0" min="0"></td>' +
+    '<td><button class="remove-row-btn" type="button" onclick="removeVenueRow(' + id + ')" title="Remove">&times;</button></td>';
 
-  if (scriptUrl) fetchLiveTotal();
+  tbody.appendChild(tr);
 
-  // ── NAVIGATION ───────────────────────────────────────────
-  window.switchView = function(name, btn) {
-    document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
-    document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
-    var view = document.getElementById('view-' + name);
-    if (view) view.classList.add('active');
-    if (btn) btn.classList.add('active');
+  var wsSel = document.getElementById('ws-sel-' + id);
+  if (wsSel) {
+    wsSel.addEventListener('change', function() {
+      var other = document.getElementById('w-other-' + id);
+      if (other) other.style.display = (wsSel.value === 'Other') ? 'block' : 'none';
+      recalcTotals();
+    });
+  }
+  var inputs = tr.querySelectorAll('input');
+  for (var k = 0; k < inputs.length; k++) {
+    inputs[k].addEventListener('input', recalcTotals);
+  }
+
+  recalcTotals();
+}
+
+function removeVenueRow(id) {
+  var row = document.getElementById('vrow-' + id);
+  if (row) row.remove();
+  recalcTotals();
+}
+
+function recalcTotals() {
+  var rows = document.querySelectorAll('#venue-rows tr');
+  var bottles = 0;
+  for (var i = 0; i < rows.length; i++) {
+    var numInputs = rows[i].querySelectorAll('input.num');
+    if (numInputs[0]) bottles += parseInt(numInputs[0].value) || 0;
+  }
+  var tb = document.getElementById('total-bottles');
+  var tv = document.getElementById('total-venues');
+  if (tb) tb.textContent = bottles;
+  if (tv) tv.textContent = rows.length;
+}
+
+function getVenueRows() {
+  var rows = document.querySelectorAll('#venue-rows tr');
+  var result = [];
+  for (var i = 0; i < rows.length; i++) {
+    var tr = rows[i];
+    var textInputs = tr.querySelectorAll('input[type="text"]');
+    var numInputs = tr.querySelectorAll('input.num');
+    var selects = tr.querySelectorAll('select');
+    var venueName = textInputs[0] ? textInputs[0].value.trim() : '';
+    var venueType = selects[0] ? selects[0].value : '';
+    var wholesaler = selects[1] ? selects[1].value : '';
+    if (wholesaler === 'Other') {
+      var otherId = tr.id.replace('vrow-', '');
+      var otherEl = document.getElementById('w-other-' + otherId);
+      wholesaler = otherEl ? otherEl.value.trim() : '';
+    }
+    var bottles = numInputs[0] ? (parseInt(numInputs[0].value) || 0) : 0;
+    if (venueName) result.push({ venueName: venueName, venueType: venueType, wholesaler: wholesaler, bottles: bottles, calls: 0 });
+  }
+  return result;
+}
+
+function submitCheckin() {
+  var repSel = document.getElementById('rep-select');
+  var weekSel = document.getElementById('week-select');
+  var rep = repSel ? repSel.value : '';
+  var weekEnding = weekSel ? weekSel.value : '';
+  var callsEl = document.getElementById('calls');
+  var contactsEl = document.getElementById('contacts');
+  var notesEl = document.getElementById('notes');
+  var calls = callsEl ? (parseInt(callsEl.value) || 0) : 0;
+  var contacts = contactsEl ? (parseInt(contactsEl.value) || 0) : 0;
+  var notes = notesEl ? notesEl.value.trim() : '';
+  var venueRows = getVenueRows();
+  var totalSales = 0;
+  for (var i = 0; i < venueRows.length; i++) totalSales += venueRows[i].bottles;
+
+  if (!rep) return showError('Please select your name.');
+  if (venueRows.length === 0) return showError('Please add at least one venue.');
+
+  var btn = document.getElementById('submit-btn');
+  var statusEl = document.getElementById('submit-status');
+  if (btn) btn.disabled = true;
+  if (statusEl) statusEl.textContent = 'Submitting…';
+  hideError();
+
+  var payloads = [];
+  for (var j = 0; j < venueRows.length; j++) {
+    payloads.push({
+      weekEnding: weekEnding, rep: rep,
+      venue: venueRows[j].venueName, venueType: venueRows[j].venueType,
+      calls: calls, contacts: contacts,
+      sales: venueRows[j].bottles, wholesaler: venueRows[j].wholesaler,
+      notes: notes, submittedAt: new Date().toISOString()
+    });
+  }
+  var summaryPayload = {
+    sales: totalSales, calls: calls, contacts: contacts, rep: rep,
+    venue: venueRows[0].venueName, venueType: venueRows[0].venueType,
+    wholesaler: venueRows[0].wholesaler, notes: notes, weekEnding: weekEnding
   };
 
-  // ── WEEKS ────────────────────────────────────────────────
-  function populateWeeks() {
-    var sel = document.getElementById('week-select');
-    if (!sel) return;
+  if (!scriptUrl) {
+    setTimeout(function() {
+      showSuccess(summaryPayload, venueRows);
+      if (btn) btn.disabled = true;
+      if (statusEl) statusEl.textContent = '';
+    }, 600);
+    return;
+  }
+
+  var sends = payloads.map(function(p) {
+    return fetch(scriptUrl, { method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
+  });
+  Promise.all(sends).then(function() {
+    showSuccess(summaryPayload, venueRows);
+    if (statusEl) statusEl.textContent = '';
+  }).catch(function() {
+    if (btn) btn.disabled = false;
+    if (statusEl) statusEl.textContent = '';
+    showError('Could not reach Google Sheets. Check your Apps Script URL in Setup.');
+  });
+}
+
+function showSuccess(payload, venueRows) {
+  totalSold += payload.sales;
+  try { localStorage.setItem('cp_total_sold', totalSold); } catch(e) {}
+  renderTarget(totalSold);
+  updateDashboard(payload, venueRows);
+  updateEmailDigest(payload);
+  var banner = document.getElementById('success-banner');
+  if (banner) { banner.style.display = 'block'; banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+}
+
+function showError(msg) {
+  var el = document.getElementById('error-banner');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+function hideError() {
+  var el = document.getElementById('error-banner');
+  if (el) el.style.display = 'none';
+}
+
+function updateDashboard(p, venueRows) {
+  var repKey = p.rep.toLowerCase().replace(/[^a-z]/g,'');
+  var statusEl = document.getElementById('status-' + repKey);
+  if (statusEl) { statusEl.textContent = 'Submitted'; statusEl.className = 'badge badge-done'; }
+  function set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+  set('d-' + repKey + '-calls', p.calls);
+  set('d-' + repKey + '-contacts', p.contacts);
+  set('d-' + repKey + '-sales', p.sales);
+  set('d-' + repKey + '-venue', p.venue + ' · ' + p.venueType);
+  set('d-' + repKey + '-w', p.wholesaler);
+  var tc = 0, tco = 0, ts = 0;
+  var reps = ['adam','grainne','paul'];
+  for (var i = 0; i < reps.length; i++) {
+    var c = document.getElementById('d-' + reps[i] + '-calls');
+    var co = document.getElementById('d-' + reps[i] + '-contacts');
+    var s = document.getElementById('d-' + reps[i] + '-sales');
+    if (c && c.textContent !== '—') tc += parseInt(c.textContent) || 0;
+    if (co && co.textContent !== '—') tco += parseInt(co.textContent) || 0;
+    if (s && s.textContent !== '—') ts += parseInt(s.textContent) || 0;
+  }
+  set('dash-calls', tc || '—');
+  set('dash-contacts', tco || '—');
+  set('dash-sales', ts || '—');
+  var tbody = document.getElementById('venue-tbody');
+  if (tbody && venueRows) {
+    if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
+    var weekSel = document.getElementById('week-select');
+    var wk = weekSel && weekSel.selectedOptions[0] ? weekSel.selectedOptions[0].text : p.weekEnding;
+    for (var j = venueRows.length - 1; j >= 0; j--) {
+      var row = venueRows[j];
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + row.venueName + '</td><td>' + row.venueType + '</td><td>' + p.rep + '</td><td>' + row.wholesaler + '</td><td>' + row.bottles + '</td><td>' + wk + '</td>';
+      tbody.insertBefore(tr, tbody.firstChild);
+    }
+  }
+}
+
+function updateEmailDigest(p) {
+  var repKey = p.rep.toLowerCase().replace(/[^a-z]/g,'');
+  var summaryEl = document.getElementById('e-' + repKey + '-summary');
+  if (summaryEl) summaryEl.textContent = p.calls + ' calls · ' + p.contacts + ' contacts · ' + p.sales + ' sales';
+  function addTo(id, n) { var el = document.getElementById(id); if (el) el.textContent = (parseInt(el.textContent) || 0) + n; }
+  addTo('e-calls', p.calls); addTo('e-contacts', p.contacts); addTo('e-sales', p.sales);
+  if (p.notes) {
+    var hi = document.getElementById('e-highlights');
+    if (hi) { hi.style.color = 'var(--ink2)'; hi.textContent = p.rep + ': ' + p.notes; }
+  }
+  var wlEl = document.getElementById('email-week-label');
+  var weekSel = document.getElementById('week-select');
+  if (wlEl && weekSel && weekSel.selectedOptions[0]) {
+    wlEl.textContent = 'Week ending ' + weekSel.selectedOptions[0].text + ' · Sales report';
+  }
+}
+
+function renderTarget(sold) {
+  var remaining = TARGET - sold;
+  var pct = Math.min((sold / TARGET) * 100, 100);
+  function set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+  set('target-remaining', remaining.toLocaleString());
+  set('target-sold', sold.toLocaleString());
+  set('target-pct', pct.toFixed(1) + '% of target reached');
+  var bar = document.getElementById('target-bar');
+  if (bar) {
+    bar.style.width = pct.toFixed(1) + '%';
+    bar.className = 'target-bar-fill' + (pct < 20 ? ' danger' : '');
+  }
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var currentMonth = months[new Date().getMonth()];
+  var cell = document.getElementById('split-this-month');
+  var lbl = document.getElementById('split-month-lbl');
+  if (cell && lbl && ['Jan','Feb','Mar'].indexOf(currentMonth) === -1) {
+    cell.style.display = 'block';
+    lbl.textContent = currentMonth;
+    var ms = 0;
+    try { ms = parseInt(localStorage.getItem('cp_month_sales') || '0'); } catch(e) {}
+    set('split-month-val', ms);
+  }
+}
+
+function saveScriptUrl() {
+  var input = document.getElementById('script-url-input');
+  if (!input) return;
+  var val = input.value.trim();
+  if (val.indexOf('https://script.google.com') !== 0) {
+    alert("That doesn't look like a Google Apps Script URL. Please check and try again.");
+    return;
+  }
+  scriptUrl = val;
+  try { localStorage.setItem('cp_script_url', val); } catch(e) {}
+  var msg = document.getElementById('url-saved-msg');
+  if (msg) msg.style.display = 'block';
+  updateUrlDisplay();
+}
+
+function updateUrlDisplay() {
+  var el = document.getElementById('current-url-display');
+  if (!el) return;
+  if (scriptUrl) { el.textContent = scriptUrl; el.style.color = 'var(--agave)'; }
+  else { el.textContent = 'No URL saved yet.'; el.style.color = 'var(--ink3)'; }
+}
+
+async function fetchLiveTotal() {
+  try {
+    var res = await fetch(scriptUrl + '?action=totals', { mode: 'cors' });
+    var data = await res.json();
+    if (data && typeof data.totalSold === 'number') {
+      totalSold = data.totalSold;
+      try { localStorage.setItem('cp_total_sold', totalSold); } catch(e) {}
+      renderTarget(totalSold);
+    }
+  } catch(e) {}
+}
+
+// ── INIT (runs after DOM is ready) ──────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  try { scriptUrl = localStorage.getItem('cp_script_url') || ''; } catch(e) {}
+  try { totalSold = parseInt(localStorage.getItem('cp_total_sold') || '669'); } catch(e) {}
+
+  // Populate week dropdown
+  var sel = document.getElementById('week-select');
+  if (sel) {
     var today = new Date();
     var day = today.getDay();
     var diffToFri = (day <= 5) ? (5 - day) : (5 - day + 7);
@@ -992,298 +1262,28 @@ document.addEventListener('DOMContentLoaded', function() {
       d.setDate(today.getDate() + diffToFri - (i * 7));
       var label = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
       var val = d.toISOString().split('T')[0];
-      var opt = new Option(label, val);
-      if (i === 0) {
-        opt.selected = true;
-        var lbl = document.getElementById('checkin-week-label');
-        if (lbl) lbl.textContent = 'Week ending ' + label;
-      }
+      var opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = label;
+      if (i === 0) opt.selected = true;
       sel.appendChild(opt);
     }
+    var weekLbl = document.getElementById('checkin-week-label');
+    if (weekLbl && sel.selectedOptions[0]) weekLbl.textContent = 'Week ending ' + sel.selectedOptions[0].text;
     sel.addEventListener('change', function() {
       var lbl = document.getElementById('checkin-week-label');
       if (lbl && sel.selectedOptions[0]) lbl.textContent = 'Week ending ' + sel.selectedOptions[0].text;
     });
   }
 
-  // ── VENUE ROWS ───────────────────────────────────────────
-  window.addVenueRow = function() {
-    var tbody = document.getElementById('venue-rows');
-    if (!tbody) { console.error('venue-rows not found'); return; }
-    venueRowId++;
-    var id = venueRowId;
+  renderTarget(totalSold);
+  addVenueRow();
 
-    var typeOpts = '<option value="">Type</option>';
-    for (var i = 0; i < VENUE_TYPES.length; i++) {
-      typeOpts += '<option value="' + VENUE_TYPES[i] + '">' + VENUE_TYPES[i] + '</option>';
-    }
-
-    var wOpts = '<option value="">Wholesaler</option>';
-    for (var j = 0; j < WHOLESALERS.length; j++) {
-      wOpts += '<option value="' + WHOLESALERS[j] + '">' + WHOLESALERS[j] + '</option>';
-    }
-
-    var tr = document.createElement('tr');
-    tr.id = 'vrow-' + id;
-    tr.innerHTML =
-      '<td><input class="venue-row-input" type="text" placeholder="Venue name"></td>' +
-      '<td><select class="venue-row-select">' + typeOpts + '</select></td>' +
-      '<td>' +
-        '<select class="venue-row-select" id="ws-sel-' + id + '">' + wOpts + '</select>' +
-        '<input class="venue-row-input" type="text" id="w-other-' + id + '" placeholder="Enter wholesaler name" style="display:none;margin-top:6px;">' +
-      '</td>' +
-      '<td><input class="venue-row-input num" type="number" placeholder="0" min="0"></td>' +
-      '<td><input class="venue-row-input num" type="number" placeholder="0" min="0"></td>' +
-      '<td><button class="remove-row-btn" type="button" title="Remove">&times;</button></td>';
-
-    tbody.appendChild(tr);
-
-    // Attach events after appending
-    tr.querySelectorAll('input').forEach(function(inp) {
-      inp.addEventListener('input', recalcTotals);
-    });
-    var wsSel = document.getElementById('ws-sel-' + id);
-    if (wsSel) {
-      wsSel.addEventListener('change', function() {
-        var other = document.getElementById('w-other-' + id);
-        if (other) other.style.display = (wsSel.value === 'Other') ? 'block' : 'none';
-        recalcTotals();
-      });
-    }
-    var removeBtn = tr.querySelector('.remove-row-btn');
-    if (removeBtn) {
-      removeBtn.addEventListener('click', function() {
-        tr.remove();
-        recalcTotals();
-      });
-    }
-
-    recalcTotals();
-  };
-
-  function recalcTotals() {
-    var rows = document.querySelectorAll('#venue-rows tr');
-    var bottles = 0;
-    rows.forEach(function(row) {
-      var numInputs = row.querySelectorAll('input.num');
-      if (numInputs[0]) bottles += parseInt(numInputs[0].value) || 0;
-    });
-    var tb = document.getElementById('total-bottles');
-    var tv = document.getElementById('total-venues');
-    if (tb) tb.textContent = bottles;
-    if (tv) tv.textContent = rows.length;
-  }
-
-  function getVenueRows() {
-    var rows = document.querySelectorAll('#venue-rows tr');
-    var result = [];
-    rows.forEach(function(tr) {
-      var textInputs = tr.querySelectorAll('input[type="text"]');
-      var numInputs = tr.querySelectorAll('input.num');
-      var selects = tr.querySelectorAll('select');
-      var venueName = textInputs[0] ? textInputs[0].value.trim() : '';
-      var venueType = selects[0] ? selects[0].value : '';
-      var wholesaler = selects[1] ? selects[1].value : '';
-      if (wholesaler === 'Other') {
-        var otherId = tr.id.replace('vrow-', '');
-        var otherEl = document.getElementById('w-other-' + otherId);
-        wholesaler = otherEl ? otherEl.value.trim() : '';
-      }
-      var bottles = numInputs[0] ? (parseInt(numInputs[0].value) || 0) : 0;
-      var calls = numInputs[1] ? (parseInt(numInputs[1].value) || 0) : 0;
-      if (venueName) result.push({ venueName: venueName, venueType: venueType, wholesaler: wholesaler, bottles: bottles, calls: calls });
-    });
-    return result;
-  }
-
-  // ── SUBMIT ───────────────────────────────────────────────
-  window.submitCheckin = function() {
-    var repSel = document.getElementById('rep-select');
-    var weekSel = document.getElementById('week-select');
-    var rep = repSel ? repSel.value : '';
-    var weekEnding = weekSel ? weekSel.value : '';
-    var calls = parseInt((document.getElementById('calls') || {}).value) || 0;
-    var contacts = parseInt((document.getElementById('contacts') || {}).value) || 0;
-    var notes = (document.getElementById('notes') || {}).value || '';
-    var venueRows = getVenueRows();
-    var totalSales = 0;
-    venueRows.forEach(function(r) { totalSales += r.bottles; });
-
-    if (!rep) return showError('Please select your name.');
-    if (venueRows.length === 0) return showError('Please add at least one venue.');
-
-    var btn = document.getElementById('submit-btn');
-    var status = document.getElementById('submit-status');
-    if (btn) btn.disabled = true;
-    if (status) status.textContent = 'Submitting…';
-    hideError();
-
-    var payloads = venueRows.map(function(row) {
-      return {
-        weekEnding: weekEnding, rep: rep,
-        venue: row.venueName, venueType: row.venueType,
-        calls: calls, contacts: contacts,
-        sales: row.bottles, wholesaler: row.wholesaler,
-        notes: notes.trim(), submittedAt: new Date().toISOString()
-      };
-    });
-    var summaryPayload = { sales: totalSales, calls: calls, contacts: contacts,
-      rep: rep, venue: venueRows[0].venueName, venueType: venueRows[0].venueType,
-      wholesaler: venueRows[0].wholesaler, notes: notes.trim(), weekEnding: weekEnding };
-
-    if (!scriptUrl) {
-      setTimeout(function() {
-        showSuccess(summaryPayload, venueRows);
-        if (btn) btn.disabled = true;
-        if (status) status.textContent = '';
-      }, 600);
-      return;
-    }
-
-    var sends = payloads.map(function(p) {
-      return fetch(scriptUrl, { method: 'POST', mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
-    });
-    Promise.all(sends).then(function() {
-      showSuccess(summaryPayload, venueRows);
-      if (status) status.textContent = '';
-    }).catch(function() {
-      if (btn) btn.disabled = false;
-      if (status) status.textContent = '';
-      showError('Could not reach Google Sheets. Check your Apps Script URL in Setup.');
-    });
-  };
-
-  function showSuccess(payload, venueRows) {
-    // Update annual target
-    totalSold += payload.sales;
-    try { localStorage.setItem('cp_total_sold', totalSold); } catch(e) {}
-    renderTarget(totalSold);
-    updateDashboard(payload, venueRows);
-    updateEmailDigest(payload);
-    var banner = document.getElementById('success-banner');
-    if (banner) { banner.style.display = 'block'; banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
-  }
-
-  function showError(msg) {
-    var el = document.getElementById('error-banner');
-    if (el) { el.textContent = msg; el.style.display = 'block'; }
-  }
-  function hideError() {
-    var el = document.getElementById('error-banner');
-    if (el) el.style.display = 'none';
-  }
-
-  // ── DASHBOARD UPDATE ─────────────────────────────────────
-  function updateDashboard(p, venueRows) {
-    var repKey = p.rep.toLowerCase().replace(/[^a-z]/g,'');
-    var statusEl = document.getElementById('status-' + repKey);
-    if (statusEl) { statusEl.textContent = 'Submitted'; statusEl.className = 'badge badge-done'; }
-    function set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
-    set('d-' + repKey + '-calls', p.calls);
-    set('d-' + repKey + '-contacts', p.contacts);
-    set('d-' + repKey + '-sales', p.sales);
-    set('d-' + repKey + '-venue', p.venue + ' · ' + p.venueType);
-    set('d-' + repKey + '-w', p.wholesaler);
-    var tc = 0, tco = 0, ts = 0;
-    ['adam','grainne','paul'].forEach(function(r) {
-      var c = document.getElementById('d-' + r + '-calls');
-      var co = document.getElementById('d-' + r + '-contacts');
-      var s = document.getElementById('d-' + r + '-sales');
-      if (c && c.textContent !== '—') tc += parseInt(c.textContent) || 0;
-      if (co && co.textContent !== '—') tco += parseInt(co.textContent) || 0;
-      if (s && s.textContent !== '—') ts += parseInt(s.textContent) || 0;
-    });
-    set('dash-calls', tc || '—');
-    set('dash-contacts', tco || '—');
-    set('dash-sales', ts || '—');
-    var tbody = document.getElementById('venue-tbody');
-    if (tbody) {
-      if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
-      var weekSel = document.getElementById('week-select');
-      var wk = weekSel && weekSel.selectedOptions[0] ? weekSel.selectedOptions[0].text : p.weekEnding;
-      if (venueRows) {
-        venueRows.forEach(function(row) {
-          var tr = document.createElement('tr');
-          tr.innerHTML = '<td>' + row.venueName + '</td><td>' + row.venueType + '</td><td>' + p.rep + '</td><td>' + row.wholesaler + '</td><td>' + row.bottles + '</td><td>' + wk + '</td>';
-          tbody.insertBefore(tr, tbody.firstChild);
-        });
-      }
-    }
-  }
-
-  function updateEmailDigest(p) {
-    var repKey = p.rep.toLowerCase().replace(/[^a-z]/g,'');
-    var summaryEl = document.getElementById('e-' + repKey + '-summary');
-    if (summaryEl) summaryEl.textContent = p.calls + ' calls · ' + p.contacts + ' contacts · ' + p.sales + ' sales';
-    function add(id, n) { var el = document.getElementById(id); if (el) el.textContent = (parseInt(el.textContent) || 0) + n; }
-    add('e-calls', p.calls); add('e-contacts', p.contacts); add('e-sales', p.sales);
-    if (p.notes) {
-      var hi = document.getElementById('e-highlights');
-      if (hi) { hi.style.color = 'var(--ink2)'; hi.textContent = (hi.textContent || '') + ' ' + p.rep + ': ' + p.notes; }
-    }
-    var wlEl = document.getElementById('email-week-label');
-    var weekSel = document.getElementById('week-select');
-    if (wlEl && weekSel && weekSel.selectedOptions[0]) wlEl.textContent = 'Week ending ' + weekSel.selectedOptions[0].text + ' · Sales report';
-  }
-
-  // ── TARGET TRACKER ───────────────────────────────────────
-  function renderTarget(sold) {
-    var remaining = TARGET - sold;
-    var pct = Math.min((sold / TARGET) * 100, 100);
-    function set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
-    set('target-remaining', remaining.toLocaleString('en-IE'));
-    set('target-sold', sold.toLocaleString('en-IE'));
-    set('target-pct', pct.toFixed(1) + '% of target reached');
-    var bar = document.getElementById('target-bar');
-    if (bar) { bar.style.width = pct.toFixed(1) + '%'; bar.className = 'target-bar-fill' + (pct < 20 ? ' danger' : ''); }
-    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    var currentMonth = months[new Date().getMonth()];
-    var cell = document.getElementById('split-this-month');
-    var lbl = document.getElementById('split-month-lbl');
-    if (cell && lbl && ['Jan','Feb','Mar'].indexOf(currentMonth) === -1) {
-      cell.style.display = 'block'; lbl.textContent = currentMonth;
-      var ms = 0; try { ms = parseInt(localStorage.getItem('cp_month_sales') || '0'); } catch(e) {}
-      set('split-month-val', ms);
-    }
-  }
-
-  async function fetchLiveTotal() {
-    try {
-      var res = await fetch(scriptUrl + '?action=totals', { mode: 'cors' });
-      var data = await res.json();
-      if (data && typeof data.totalSold === 'number') {
-        totalSold = data.totalSold;
-        try { localStorage.setItem('cp_total_sold', totalSold); } catch(e) {}
-        renderTarget(totalSold);
-      }
-    } catch(e) { /* silent fallback */ }
-  }
-
-  // ── SETUP ────────────────────────────────────────────────
-  window.saveScriptUrl = function() {
-    var input = document.getElementById('script-url-input');
-    if (!input) return;
-    var val = input.value.trim();
-    if (!val.startsWith('https://script.google.com')) {
-      alert("That doesn't look like a Google Apps Script URL. Please check and try again.");
-      return;
-    }
-    scriptUrl = val;
-    try { localStorage.setItem('cp_script_url', val); } catch(e) {}
-    var msg = document.getElementById('url-saved-msg');
-    if (msg) msg.style.display = 'block';
-    updateUrlDisplay();
-  };
-
-  function updateUrlDisplay() {
-    var el = document.getElementById('current-url-display');
-    if (!el) return;
-    if (scriptUrl) { el.textContent = scriptUrl; el.style.color = 'var(--agave)'; }
-    else { el.textContent = 'No URL saved yet.'; el.style.color = 'var(--ink3)'; }
-  }
-
-}); // end DOMContentLoaded
+  var urlInput = document.getElementById('script-url-input');
+  if (urlInput && scriptUrl) urlInput.value = scriptUrl;
+  updateUrlDisplay();
+  if (scriptUrl) fetchLiveTotal();
+});
 </script>
 </body>
 </html>

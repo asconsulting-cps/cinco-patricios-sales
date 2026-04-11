@@ -885,10 +885,11 @@ header {
   </div>
 
   <div class="setup-notice">
-    <strong>Step 1 — Create your Google Sheet</strong><br>
+    <strong>Step 1 — Create &amp; share your Google Sheet</strong><br>
     Open Google Sheets and create a new spreadsheet. Name it <em>Cinco Patricio's Sales Log</em>.<br>
-    Add this header row in row 1 (one value per cell, A through L):
+    Add this header row in row 1 (one value per cell, A through L):<br>
     <code>Timestamp | Week Ending | Rep | Venue | Venue Type | Calls | Contacts | Sales | Wholesaler | Notes | Submitted At | Row ID</code>
+    Then click <em>Share</em> (top right) → <em>Change to anyone with the link</em> → set to <strong>Viewer</strong>. This allows the dashboard to read data without logging in.
   </div>
 
   <div class="setup-notice">
@@ -1051,6 +1052,7 @@ var TARGET = 5500;
 var venueRowId = 0;
 var totalSold = 669;
 var scriptUrl = '';
+var sheetId = '1xSMLUL9HX93ND1IGUWkp8h0Nq7L0vzIBHwN1STgSJ7w';
 
 // ── TOP-LEVEL FUNCTIONS (callable from onclick) ─────────────
 
@@ -1063,7 +1065,7 @@ function switchView(name, btn) {
   if (view) view.classList.add('active');
   if (btn) btn.classList.add('active');
   // Refresh live data whenever dashboard is opened
-  if (name === 'dashboard' && scriptUrl) fetchLiveTotal();
+  if (name === 'dashboard') fetchLiveTotal();
 }
 
 function addVenueRow() {
@@ -1340,22 +1342,116 @@ function updateUrlDisplay() {
 }
 
 function fetchLiveTotal() {
-  if (!scriptUrl) return;
-  // Use JSONP to avoid CORS issues with Google Apps Script
-  var callbackName = 'cpCallback_' + Date.now();
-  var script = document.createElement('script');
-  script.onerror = function() {
-    console.log('fetchLiveTotal: script load failed');
-    script.remove();
-    delete window[callbackName];
-  };
-  window[callbackName] = function(data) {
-    script.remove();
-    delete window[callbackName];
-    processDashboardData(data);
-  };
-  script.src = scriptUrl + '?callback=' + callbackName + '&t=' + Date.now();
-  document.head.appendChild(script);
+  if (!sheetId) { console.log('No sheet ID configured'); return; }
+  // Fetch CSV directly from Google Sheets public export — no CORS issues
+  var url = 'https://docs.google.com/spreadsheets/d/' + sheetId + '/export?format=csv&gid=0&t=' + Date.now();
+  fetch(url)
+    .then(function(r) { return r.text(); })
+    .then(function(csv) { processCsvData(csv); })
+    .catch(function(e) { console.log('fetchLiveTotal error:', e.message); });
+}
+
+function parseCSV(text) {
+  var rows = [];
+  var lines = text.split('\n');
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    if (!line) continue;
+    var cols = [];
+    var cur = '';
+    var inQ = false;
+    for (var j = 0; j < line.length; j++) {
+      var c = line[j];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+      else { cur += c; }
+    }
+    cols.push(cur.trim());
+    rows.push(cols);
+  }
+  return rows;
+}
+
+function processCsvData(csv) {
+  try {
+    var rows = parseCSV(csv);
+    if (rows.length < 2) return;
+    // Columns: 0=Timestamp,1=WeekEnding,2=Rep,3=Venue,4=VenueType,5=Calls,6=Contacts,7=Sales,8=Wholesaler,9=Notes
+    var baseline = 669;
+    var totalSold = baseline;
+    var monthlySales = {};
+    var repWeek = {};
+    var repLastVenue = {};
+    var recentRows = [];
+
+    // Work out this week's Friday date string
+    var today = new Date();
+    var dow = today.getDay();
+    var daysToFri = (dow === 0) ? 5 : (dow === 6) ? 6 : (5 - dow);
+    var thisFri = new Date(today);
+    thisFri.setDate(today.getDate() + daysToFri);
+    var thisWeekStr = thisFri.toISOString().split('T')[0];
+
+    for (var i = 1; i < rows.length; i++) {
+      var row = rows[i];
+      if (row.length < 8) continue;
+      var sales = parseInt(row[7]) || 0;
+      totalSold += sales;
+
+      // Parse weekEnding — stored as yyyy-MM-dd from our form
+      var we = row[1].trim();
+      // Google CSV may wrap dates — strip quotes
+      we = we.replace(/^"|"$/g, '');
+      // Normalise to yyyy-MM-dd
+      var rowWeekStr = '';
+      if (/^\d{4}-\d{2}-\d{2}/.test(we)) {
+        rowWeekStr = we.substring(0, 10);
+      } else {
+        // Try parsing other formats
+        var d = new Date(we);
+        if (!isNaN(d.getTime())) rowWeekStr = d.toISOString().split('T')[0];
+      }
+
+      // Monthly totals
+      if (rowWeekStr.length >= 7) {
+        var yr  = parseInt(rowWeekStr.substring(0, 4));
+        var mon = parseInt(rowWeekStr.substring(5, 7)) - 1;
+        var mk  = yr + '-' + mon;
+        monthlySales[mk] = (monthlySales[mk] || 0) + sales;
+      }
+
+      var rep = (row[2] || '').trim();
+
+      if (rowWeekStr === thisWeekStr) {
+        if (!repWeek[rep]) repWeek[rep] = { calls: 0, contacts: 0, sales: 0 };
+        repWeek[rep].calls    += parseInt(row[5]) || 0;
+        repWeek[rep].contacts += parseInt(row[6]) || 0;
+        repWeek[rep].sales    += sales;
+        repLastVenue[rep] = row[3] + ' (' + row[4] + ')';
+      }
+
+      recentRows.push({
+        week: rowWeekStr, rep: rep,
+        venue: row[3], venueType: row[4],
+        wholesaler: row[8] || '', sales: sales
+      });
+    }
+
+    console.log('CSV rows processed:', rows.length - 1);
+    console.log('thisWeek:', thisWeekStr);
+    console.log('repWeek:', JSON.stringify(repWeek));
+    console.log('monthlySales:', JSON.stringify(monthlySales));
+
+    processDashboardData({
+      status: 'ok',
+      totalSold: totalSold,
+      monthlySales: monthlySales,
+      thisWeek: thisWeekStr,
+      repWeek: repWeek,
+      repLastVenue: repLastVenue,
+      recentRows: recentRows.reverse().slice(0, 15)
+    });
+  } catch(e) { console.log('processCsvData error:', e.message); }
 }
 
 function processDashboardData(data) {
@@ -1512,7 +1608,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var urlInput = document.getElementById('script-url-input');
   if (urlInput && scriptUrl) urlInput.value = scriptUrl;
   updateUrlDisplay();
-  if (scriptUrl) fetchLiveTotal();
+  fetchLiveTotal(); // reads directly from public Google Sheet CSV
 });
 </script>
 </body>

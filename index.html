@@ -982,16 +982,24 @@ function doGet(e) {
     });
   }
   recentRows = recentRows.reverse().slice(0, 15);
+  var json = JSON.stringify({
+    status: 'ok',
+    totalSold: totalSold,
+    monthlySales: monthlySales,
+    thisWeek: thisWeekStr,
+    repWeek: repWeek,
+    repLastVenue: repLastVenue,
+    recentRows: recentRows
+  });
+  // Support JSONP for cross-origin requests
+  var callback = e && e.parameter && e.parameter.callback;
+  if (callback) {
+    return ContentService
+      .createTextOutput(callback + '(' + json + ')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
   return ContentService
-    .createTextOutput(JSON.stringify({
-      status: 'ok',
-      totalSold: totalSold,
-      monthlySales: monthlySales,
-      thisWeek: thisWeekStr,
-      repWeek: repWeek,
-      repLastVenue: repLastVenue,
-      recentRows: recentRows
-    }))
+    .createTextOutput(json)
     .setMimeType(ContentService.MimeType.JSON);
 }</div>
   </div>
@@ -1321,10 +1329,27 @@ function updateUrlDisplay() {
   else { el.textContent = 'No URL saved yet.'; el.style.color = 'var(--ink3)'; }
 }
 
-async function fetchLiveTotal() {
+function fetchLiveTotal() {
+  if (!scriptUrl) return;
+  // Use JSONP to avoid CORS issues with Google Apps Script
+  var callbackName = 'cpCallback_' + Date.now();
+  var script = document.createElement('script');
+  script.onerror = function() {
+    console.log('fetchLiveTotal: script load failed');
+    script.remove();
+    delete window[callbackName];
+  };
+  window[callbackName] = function(data) {
+    script.remove();
+    delete window[callbackName];
+    processDashboardData(data);
+  };
+  script.src = scriptUrl + '?callback=' + callbackName + '&t=' + Date.now();
+  document.head.appendChild(script);
+}
+
+function processDashboardData(data) {
   try {
-    var res = await fetch(scriptUrl, { mode: 'cors' });
-    var data = await res.json();
     if (!data || data.status !== 'ok') return;
 
     // ── Annual target ────────────────────────────────
@@ -1357,36 +1382,46 @@ async function fetchLiveTotal() {
     }
 
     // ── Rep breakdown ────────────────────────────────
-    var reps = ['Adam','Grainne','Paul'];
     var repKeys = ['adam','grainne','paul'];
-    // Map Gráinne -> grainne for IDs
-    var repMap = { 'Adam':'adam', 'Gráinne':'grainne', 'Paul':'paul' };
     function set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+    // Normalise rep name to key (strip accents, lowercase, letters only)
+    function toKey(name) {
+      return name.toLowerCase()
+        .replace(/[à-å]/g,'a')
+        .replace(/[è-ë]/g,'e')
+        .replace(/[ì-ï]/g,'i')
+        .replace(/[ò-ö]/g,'o')
+        .replace(/[ù-ü]/g,'u')
+        .replace(/[^a-z]/g,'');
+    }
+    // Build a normalised lookup of repWeek
+    var repWeekNorm = {};
+    for (var k in data.repWeek) {
+      repWeekNorm[toKey(k)] = { data: data.repWeek[k], originalKey: k };
+    }
+    var repLastNorm = {};
+    for (var k2 in data.repLastVenue) {
+      repLastNorm[toKey(k2)] = data.repLastVenue[k2];
+    }
 
-    for (var r = 0; r < reps.length; r++) {
-      var repName = reps[r];
-      // Try exact name or Gráinne variant
-      var repData = data.repWeek[repName] || data.repWeek['Gráinne'] && repName === 'Grainne' ? (data.repWeek['Gráinne'] || data.repWeek[repName]) : null;
-      // Better: find by checking all keys
-      var foundKey = null;
-      for (var k in data.repWeek) {
-        if (k.toLowerCase().replace(/[^a-z]/g,'') === repKeys[r]) { foundKey = k; break; }
-      }
+    for (var r = 0; r < repKeys.length; r++) {
       var key = repKeys[r];
       var statusEl = document.getElementById('status-' + key);
-      if (foundKey && data.repWeek[foundKey]) {
-        var rd = data.repWeek[foundKey];
-        set('d-' + key + '-calls', rd.calls);
-        set('d-' + key + '-contacts', rd.contacts);
-        set('d-' + key + '-sales', rd.sales);
-        set('d-' + key + '-venue', data.repLastVenue[foundKey] || '—');
+      var match = repWeekNorm[key];
+      if (match && match.data) {
+        var rd = match.data;
+        set('d-' + key + '-calls',    rd.calls    || 0);
+        set('d-' + key + '-contacts', rd.contacts || 0);
+        set('d-' + key + '-sales',    rd.sales    || 0);
+        set('d-' + key + '-venue',    repLastNorm[key] || '—');
+        set('d-' + key + '-w',        '');
         if (statusEl) { statusEl.textContent = 'Submitted'; statusEl.className = 'badge badge-done'; }
       } else {
-        set('d-' + key + '-calls', '—');
+        set('d-' + key + '-calls',    '—');
         set('d-' + key + '-contacts', '—');
-        set('d-' + key + '-sales', '—');
-        set('d-' + key + '-venue', '—');
-        set('d-' + key + '-w', '—');
+        set('d-' + key + '-sales',    '—');
+        set('d-' + key + '-venue',    '—');
+        set('d-' + key + '-w',        '—');
         if (statusEl) { statusEl.textContent = 'Not submitted'; statusEl.className = 'badge badge-missing'; }
       }
     }
@@ -1424,7 +1459,7 @@ async function fetchLiveTotal() {
       }
     }
 
-  } catch(e) { console.log('fetchLiveTotal error:', e.message); }
+  } catch(e) { console.log('processDashboardData error:', e.message); }
 }
 
 // ── INIT (runs after DOM is ready) ──────────────────────────

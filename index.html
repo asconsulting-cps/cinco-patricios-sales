@@ -919,79 +919,89 @@ header {
 }
 
 function doGet(e) {
-  var sheet = SpreadsheetApp
-    .getActiveSpreadsheet()
-    .getSheetByName('Sheet1');
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet1');
   var rows = sheet.getDataRange().getValues();
-  // Columns: 0=Timestamp,1=WeekEnding,2=Rep,3=Venue,4=VenueType,5=Calls,6=Contacts,7=Sales,8=Wholesaler,9=Notes
   var tz = Session.getScriptTimeZone();
-  var baseline = 669; // Jan 200 + Feb 120 + Mar 349
+  var baseline = 669;
   var totalSold = baseline;
   var monthlySales = {};
-  // Most recent Friday (past or today)
+
+  // Find this week's Friday
   var today = new Date();
-  var day = today.getDay(); // 0=Sun,5=Fri,6=Sat
-  var daysBack = (day === 6) ? 1 : (day === 0) ? 2 : (day + 2) % 7 === 0 ? 0 : day - 5;
-  if (daysBack < 0) daysBack += 7;
-  var lastFri = new Date(today);
-  lastFri.setDate(today.getDate() - daysBack);
-  var thisWeekStr = Utilities.formatDate(lastFri, tz, 'yyyy-MM-dd');
+  var dow = today.getDay();
+  var daysToFri = (dow === 0) ? 5 : (dow === 6) ? 6 : (5 - dow);
+  var thisFri = new Date(today);
+  thisFri.setDate(today.getDate() + daysToFri);
+  var thisWeekStr = Utilities.formatDate(thisFri, tz, 'yyyy-MM-dd');
+
   var repWeek = {};
   var repLastVenue = {};
   var recentRows = [];
+
+  function toDateStr(val) {
+    if (!val) return '';
+    if (val instanceof Date) return Utilities.formatDate(val, tz, 'yyyy-MM-dd');
+    var s = String(val).trim();
+    if (s.length >= 10 && s.charAt(4) === '-') return s.substring(0, 10);
+    try {
+      var d = new Date(s);
+      if (!isNaN(d.getTime())) return Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+    } catch(ex) {}
+    return '';
+  }
 
   for (var i = 1; i < rows.length; i++) {
     var sales = parseInt(rows[i][7]);
     if (isNaN(sales)) sales = 0;
     totalSold += sales;
-    // Format the weekEnding cell as yyyy-MM-dd regardless of how Sheets stores it
-    var rowWeekStr = '';
-    try {
-      var we = rows[i][1];
-      if (we instanceof Date) {
-        rowWeekStr = Utilities.formatDate(we, tz, 'yyyy-MM-dd');
-      } else {
-        rowWeekStr = String(we).substring(0, 10);
-      }
-    } catch(ex) { rowWeekStr = ''; }
-    // Monthly totals
-    try {
-      var rd = new Date(rowWeekStr);
-      if (!isNaN(rd.getTime())) {
-        var mk = rd.getFullYear() + '-' + rd.getMonth();
-        monthlySales[mk] = (monthlySales[mk] || 0) + sales;
-      }
-    } catch(ex2) {}
-    var rep = String(rows[i][2]);
-    // This week's rep totals
+
+    var rowWeekStr = toDateStr(rows[i][1]);
+
+    if (rowWeekStr.length >= 7) {
+      var yr  = parseInt(rowWeekStr.substring(0, 4));
+      var mon = parseInt(rowWeekStr.substring(5, 7)) - 1;
+      var mk  = yr + '-' + mon;
+      monthlySales[mk] = (monthlySales[mk] || 0) + sales;
+    }
+
+    var rep = String(rows[i][2]).trim();
+
     if (rowWeekStr === thisWeekStr) {
-      if (!repWeek[rep]) repWeek[rep] = { calls:0, contacts:0, sales:0 };
+      if (!repWeek[rep]) repWeek[rep] = { calls: 0, contacts: 0, sales: 0 };
       repWeek[rep].calls    += parseInt(rows[i][5]) || 0;
       repWeek[rep].contacts += parseInt(rows[i][6]) || 0;
       repWeek[rep].sales    += sales;
       repLastVenue[rep] = String(rows[i][3]) + ' (' + String(rows[i][4]) + ')';
     }
-    // Recent activity
+
     recentRows.push({
-      week: rowWeekStr,
-      rep: rep,
-      venue: String(rows[i][3]),
-      venueType: String(rows[i][4]),
+      week:       rowWeekStr,
+      rep:        rep,
+      venue:      String(rows[i][3]),
+      venueType:  String(rows[i][4]),
       wholesaler: String(rows[i][8]),
-      sales: sales
+      sales:      sales
     });
   }
+
   recentRows = recentRows.reverse().slice(0, 15);
+
   var json = JSON.stringify({
-    status: 'ok',
-    totalSold: totalSold,
+    status:       'ok',
+    totalSold:    totalSold,
     monthlySales: monthlySales,
-    thisWeek: thisWeekStr,
-    repWeek: repWeek,
+    thisWeek:     thisWeekStr,
+    repWeek:      repWeek,
     repLastVenue: repLastVenue,
-    recentRows: recentRows
+    recentRows:   recentRows,
+    debug: {
+      rowCount:   rows.length - 1,
+      sampleWeek: rows.length > 1 ? toDateStr(rows[1][1]) : 'no rows',
+      today:      Utilities.formatDate(today, tz, 'yyyy-MM-dd'),
+      thisWeek:   thisWeekStr
+    }
   });
-  // Support JSONP for cross-origin requests
+
   var callback = e && e.parameter && e.parameter.callback;
   if (callback) {
     return ContentService
@@ -1351,6 +1361,10 @@ function fetchLiveTotal() {
 function processDashboardData(data) {
   try {
     if (!data || data.status !== 'ok') return;
+    // Log debug info so we can see what the sheet returns
+    if (data.debug) console.log('Sheet debug:', JSON.stringify(data.debug));
+    console.log('repWeek:', JSON.stringify(data.repWeek));
+    console.log('monthlySales:', JSON.stringify(data.monthlySales));
 
     // ── Annual target ────────────────────────────────
     if (typeof data.totalSold === 'number') {
